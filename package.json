@@ -1,0 +1,24 @@
+{
+  "name": "necesito-colombia",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "npm run build && node dist/backend/server.js",
+    "start": "npm run build && node dist/backend/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.15",
+    "express": "^4.21.2",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.34",
+    "@types/web-push": "^3.6.4",
+    "sharp": "^0.35.3",
+    "typescript": "^5.9.2"
+  }
+}

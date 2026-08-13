@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.env.*
+.git
+.gitignore
+README.md
+public/app.js.map
+public/coordinar.js.map
+public/push.js.map
+public/sw.js.map

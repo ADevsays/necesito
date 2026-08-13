@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>COORDINAR | NECESITO</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/icon-192.png" type="image/png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(console.error);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <main class="shell">
+      <h1 class="mb-6">NECESIDADES ACTIVAS</h1>
+      <button onclick="window.location.href='/'" class="btn-large secondary mb-6" style="width:100%; border:none; padding:1rem;">⬅ VOLVER AL INICIO</button>
+      <button id="btnPushAlerts" onclick="subscribeToPushNotifications()" class="btn-large mb-6" style="width:100%; border:2px solid var(--primary); color:var(--primary); padding:1rem; text-align:center; display:none;">🔔 ACTIVAR ALERTAS URGENTES</button>
+
+      <div class="mb-6" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+          <label class="micro" style="display:block; margin-bottom:0.25rem;">ZONA</label>
+          <select id="regionFilter" style="margin-bottom: 0;">
+            <option value="">🗺️ Todas las zonas</option>
+            <option value="Manizales">Manizales</option>
+            <option value="Cali">Cali</option>
+            <option value="Pereira">Pereira</option>
+            <option value="Chocó">Chocó</option>
+          </select>
+        </div>
+        <div>
+          <label class="micro" style="display:block; margin-bottom:0.25rem;">ESTADO</label>
+          <select id="statusFilter" style="margin-bottom: 0;">
+            <option value="" selected>Todo estado</option>
+            <option value="new">🆕 Nuevo</option>
+            <option value="in_progress">En proceso</option>
+            <option value="resolved">Resuelto</option>
+            <option value="invalid">Descartado</option>
+          </select>
+      </div>
+
+      <div class="mb-4">
+        <h3 id="reportsCountText">0 Casos</h3>
+      </div>
+      <div id="coordList"></div>
+      
+    </main>
+    
+    <div id="photoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column; padding:1rem; cursor:pointer;" onclick="this.style.display='none'">
+      <img id="modalImg" style="max-width:100%; max-height:85vh; object-fit:contain; border:2px solid var(--border);" />
+      <button class="btn-large secondary" style="width:100%; margin-top:1rem; max-width: 400px;">CERRAR</button>
+    </div>
+
+    <script type="module" src="/coordinar.js"></script>
+    <script src="/push.js"></script>
+  </body>
+</html>

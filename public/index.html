@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#111111" />
+    <title>Necesito Colombia</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="/icon-192.png" type="image/png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(console.error);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <main class="shell">
+      
+      <!-- VIEW: HOME -->
+      <section id="view-home" class="view active">
+        <h1>NECESITO</h1>
+        <h3>Encuentra una necesidad. Regístrala. Llévala hasta quien puede ayudar.</h3>
+        
+        <div id="statusBanner" class="status-banner offline">
+          🟠 SIN INTERNET — SE GUARDA LOCALMENTE
+        </div>
+        
+        <p class="mb-4">¿Qué encontraste?</p>
+        
+        <button id="btnNewReport" class="btn-massive accent">
+          + NUEVO REPORTE
+        </button>
+        
+        <button id="btnFastReport" class="btn-massive secondary">
+          ⚡ REPORTE RÁPIDO
+        </button>
+        
+        <div class="mt-6">
+          <button id="btnViewPending" class="btn-massive secondary" style="font-size:1.1rem; padding: 1rem;">
+            📋 REPORTES PENDIENTES
+          </button>
+          <button class="btn-massive secondary" style="font-size:1.1rem; padding: 1rem;" onclick="window.location.href='/coordinar'">
+            🗺️ VER DASHBOARD
+          </button>
+          <button id="btnInstallApp" class="btn-massive accent" style="font-size:1.1rem; padding: 1rem; display:none; margin-top: 1rem;">
+            📱 INSTALAR APLICACIÓN
+          </button>
+          <button id="btnPushAlerts" onclick="subscribeToPushNotifications()" class="btn-large mt-4" style="width:100%; border:2px solid var(--primary); color:var(--primary); padding:1rem; text-align:center; display:none;">
+            🔔 ACTIVAR ALERTAS URGENTES
+          </button>
+        </div>
+      </section>
+
+      <!-- VIEW: CAPTURE -->
+      <section id="view-capture" class="view">
+        <h1 class="mb-6">NUEVO REPORTE</h1>
+        
+        <!-- LOCATION -->
+        <h2>¿DÓNDE ESTÁ LA PERSONA?</h2>
+        <div class="mb-4" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <button class="btn-large" data-loc="gps">📍 USAR MI UBICACIÓN</button>
+          <button class="btn-large" data-loc="text">✏️ ESCRIBIR UBICACIÓN</button>
+          <button class="btn-large" data-loc="unknown">❓ NO SÉ</button>
+        </div>
+        <input type="text" id="locationInput" placeholder="Ej: Iglesia de San José del Palmar" class="hidden mb-6" style="display:none;" />
+        <p id="locationFeedback" class="micro mb-6" style="color:var(--primary);"></p>
+
+        <!-- PHOTO -->
+        <h2 class="mt-6">FOTO (Opcional)</h2>
+        <div class="mb-4">
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" />
+          <button id="btnCapturePhoto" class="btn-large secondary mb-2" style="width:100%;">📷 AÑADIR FOTO</button>
+          <div id="photoPreviewContainer" style="display:none; position:relative; display:inline-block; max-width:100%;">
+            <img id="photoPreview" style="max-width:100%; max-height:200px; border-radius:var(--radius); border:2px solid var(--border);" />
+            <button id="btnRemovePhoto" style="position:absolute; top:-10px; right:-10px; background:#ef4444; color:white; border:none; border-radius:50%; width:40px; height:40px; font-weight:800; font-size:1.2rem; cursor:pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.5);">X</button>
+          </div>
+        </div>
+
+        <!-- NEEDS -->
+        <h2>NECESIDAD</h2>
+        <div class="grid-2 mb-6" id="needsGrid">
+          <button class="btn-large" data-need="rescue"><span style="font-size: 1.5rem">🔴</span> RESCATE</button>
+          <button class="btn-large" data-need="medical"><span style="font-size: 1.5rem">🏥</span> MÉDICO</button>
+          <button class="btn-large" data-need="water"><span style="font-size: 1.5rem">💧</span> AGUA</button>
+          <button class="btn-large" data-need="food"><span style="font-size: 1.5rem">🍲</span> COMIDA</button>
+          <button class="btn-large" data-need="shelter"><span style="font-size: 1.5rem">🏠</span> REFUGIO</button>
+          <button class="btn-large" data-need="medication"><span style="font-size: 1.5rem">💊</span> MEDICAMENTOS</button>
+          <button class="btn-large" data-need="vulnerable"><span style="font-size: 1.5rem">👶</span> VULNERABLE</button>
+          <button class="btn-large" data-need="missing"><span style="font-size: 1.5rem">👤</span> DESAPARECIDO</button>
+          <button class="btn-large" data-need="other"><span style="font-size: 1.5rem">📦</span> OTRO</button>
+        </div>
+
+        <!-- PRIORITY -->
+        <h2>¿QUÉ TAN URGENTE ES?</h2>
+        <div class="mb-6">
+          <button class="btn-large mb-2" data-priority="critical" style="width:100%;">🔴 CRÍTICO<span class="micro">Riesgo inmediato para la vida</span></button>
+          <button class="btn-large mb-2" data-priority="urgent" style="width:100%;">🟠 URGENTE<span class="micro">Necesita ayuda pronto</span></button>
+          <button class="btn-large mb-2" data-priority="needed" style="width:100%;">🟢 NECESARIO<span class="micro">Importante pero no peligroso</span></button>
+        </div>
+
+        <!-- PEOPLE -->
+        <div id="fullFormSection">
+          <h2>¿CUÁNTAS PERSONAS?</h2>
+          <div class="count-scroll mb-4" id="peopleRow">
+            <button class="count-btn selected" data-val="1">1</button>
+            <button class="count-btn" data-val="2">2</button>
+            <button class="count-btn" data-val="3">3</button>
+            <button class="count-btn" data-val="4">4</button>
+            <button class="count-btn" data-val="5">5</button>
+            <button class="count-btn" data-val="6">6</button>
+            <button class="count-btn" data-val="7">7</button>
+            <button class="count-btn" data-val="8">8</button>
+            <button class="count-btn" data-val="9">9</button>
+            <button class="count-btn" data-val="10+">10+</button>
+          </div>
+
+          <div class="mb-6">
+            <div class="toggle-row">
+              <span>¿Hay heridos?</span>
+              <div class="toggle-group" data-field="injured">
+                <button class="toggle-btn" data-val="yes">Sí</button>
+                <button class="toggle-btn" data-val="no">No</button>
+                <button class="toggle-btn selected" data-val="unknown">No sé</button>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <span>¿Personas atrapadas?</span>
+              <div class="toggle-group" data-field="trapped">
+                <button class="toggle-btn" data-val="yes">Sí</button>
+                <button class="toggle-btn" data-val="no">No</button>
+                <button class="toggle-btn selected" data-val="unknown">No sé</button>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <span>¿Hay niños?</span>
+              <div class="toggle-group" data-field="children">
+                <button class="toggle-btn" data-val="yes">Sí</button>
+                <button class="toggle-btn" data-val="no">No</button>
+                <button class="toggle-btn selected" data-val="unknown">No sé</button>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <span>¿Adultos mayores?</span>
+              <div class="toggle-group" data-field="elderly">
+                <button class="toggle-btn" data-val="yes">Sí</button>
+                <button class="toggle-btn" data-val="no">No</button>
+                <button class="toggle-btn selected" data-val="unknown">No sé</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PHOTO -->
+        <!-- ADDITIONAL DETAILS -->
+        <h2 class="mt-6">DETALLES ADICIONALES (Opcional)</h2>
+        <textarea id="descriptionInput" class="mb-4" rows="3" placeholder="Ej. Casa en riesgo de colapso, se necesita oxígeno..."></textarea>
+          
+        </div>
+
+        <button id="btnSaveReport" class="btn-massive accent mt-6">GUARDAR REPORTE</button>
+        <button id="btnCancel" class="btn-massive secondary">CANCELAR</button>
+      </section>
+
+      <!-- VIEW: PROFILE SETUP (First time only) -->
+      <section id="view-profile" class="view">
+        <h1 class="mb-6">¿QUIÉN ESTÁ REGISTRANDO?</h1>
+        <p>No necesitas cuenta ni contraseña.</p>
+        <input type="text" id="volunteerAlias" placeholder="Tu nombre o alias (Ej: Carlos)" maxlength="80" />
+          <input type="tel" id="volunteerPhone" placeholder="Teléfono (Obligatorio)" required />
+          <button id="btnSaveProfile" class="btn-massive accent">ENTRAR</button>
+      </section>
+
+      <!-- VIEW: PENDING -->
+      <section id="view-pending" class="view">
+        <h1 class="mb-6">REPORTES PENDIENTES</h1>
+        <button id="btnBackFromPending" class="btn-massive secondary mb-6">⬅ VOLVER</button>
+        
+        <div id="pendingList"></div>
+      </section>
+
+    </main>
+    <script type="module" src="/app.js"></script>
+    <script src="/push.js"></script>
+  </body>
+</html>

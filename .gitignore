@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.*
+.DS_Store
+public/app.js.map
+public/coordinar.js.map
+public/push.js.map
+public/sw.js.map

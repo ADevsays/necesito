@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  <!-- Brutalist thick cross representing health/safety -->
+  <path d="M216 112h80v104h104v80H296v104h-80V296H112v-80h104V112z" fill="#fdba74" />
+</svg>
