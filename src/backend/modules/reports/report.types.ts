@@ -1,6 +1,6 @@
 export type SyncStatus = "pending" | "syncing" | "synced" | "failed";
 
-export type ReportStatus = "new" | "assigned" | "in_progress" | "resolved" | "invalid";
+export type ReportStatus = "new" | "assigned" | "in_progress" | "resolved" | "invalid" | "flagged";
 
 export type Priority = "critical" | "urgent" | "necessary";
 

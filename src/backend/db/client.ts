@@ -18,7 +18,8 @@ export function getRemoteTursoClient() {
 }
 
 export function getLocalClient() {
-  const localFile = join(process.cwd(), "data", "necesito-local.db");
+  const dbPath = process.env.LOCAL_DB_PATH || join("data", "necesito-local.db");
+  const localFile = join(process.cwd(), dbPath);
   mkdirSync(dirname(localFile), { recursive: true });
   client = createClient({
     url: `file:${localFile}`,

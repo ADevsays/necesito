@@ -68,7 +68,7 @@ function normalizeReportPayload(payload: ReportSyncInput) {
     sync_status: ["pending", "syncing", "synced", "failed"].includes(payload.sync_status || "") ? payload.sync_status! : "pending",
     sync_attempts: Number.isFinite(Number(payload.sync_attempts)) ? Number(payload.sync_attempts) : 0,
     last_sync_attempt: payload.last_sync_attempt ? cleanText(payload.last_sync_attempt, 40) : null,
-    status: ["new", "assigned", "in_progress", "resolved", "invalid"].includes(payload.status || "") ? payload.status! : "new",
+    status: ["new", "assigned", "in_progress", "resolved", "invalid", "flagged"].includes(payload.status || "") ? payload.status! : "new",
     status_changed_at: cleanText(payload.status_changed_at || payload.created_at || new Date().toISOString(), 40),
     region: cleanText(payload.region || location?.region || "", 60),
     municipality: cleanText(payload.municipality || location?.municipality || "", 80),
@@ -181,8 +181,12 @@ export async function listReports(filters: {
       if (normalizedMunicipality && (report.municipality || "").toLowerCase() !== normalizedMunicipality) return false;
       if (normalizedNeed && !(report.needs as string[]).map((item) => item.toLowerCase()).includes(normalizedNeed)) return false;
       if (normalizedPriority && report.priority !== normalizedPriority) return false;
+      
       const actualStatus = (report.status || "new").toLowerCase();
+      // If no status is specified in filters, exclude "flagged" by default
+      if (!normalizedStatus && actualStatus === "flagged") return false;
       if (normalizedStatus && actualStatus !== normalizedStatus) return false;
+      
       if (createdAfter && new Date(report.created_at) <= createdAfter) return false;
       return true;
     })
@@ -193,7 +197,7 @@ export async function updateReportStatus(id: number, status: string, changedBy: 
   const current = await ReportModel.findOne<ReportRecord>({ where: { id } });
   if (!current) return null;
 
-  const nextStatus = ["new", "assigned", "in_progress", "resolved", "invalid"].includes(status) ? status : null;
+  const nextStatus = ["new", "assigned", "in_progress", "resolved", "invalid", "flagged"].includes(status) ? status : null;
   if (!nextStatus) throw new Error("invalid_status");
 
   const now = new Date().toISOString();
@@ -214,6 +218,43 @@ export async function updateReportStatus(id: number, status: string, changedBy: 
   });
 
   return await ReportModel.findOne<ReportRecord>({ where: { id } });
+}
+
+export async function flagReport(reportId: number, flaggedBy: string, reason: string) {
+  const current = await ReportModel.findOne<ReportRecord>({ where: { id: reportId } });
+  if (!current) throw new Error("not_found");
+
+  const { ReportFlagModel } = await import("./flag.model.js");
+
+  // Check if volunteer already flagged this report
+  const existingFlags = await ReportFlagModel.findAll();
+  const alreadyFlagged = existingFlags.some(
+    (f: any) => f.report_id === reportId && f.flagged_by === flaggedBy
+  );
+
+  if (alreadyFlagged) {
+    throw new Error("already_flagged");
+  }
+
+  // Insert flag
+  await ReportFlagModel.create({
+    report_id: reportId,
+    flagged_by: cleanText(flaggedBy, 80),
+    reason: cleanText(reason, 80),
+    created_at: new Date().toISOString(),
+  });
+
+  // Count flags
+  const allFlags = await ReportFlagModel.findAll();
+  const count = allFlags.filter((f: any) => f.report_id === reportId).length;
+
+  let report = current;
+  if (count >= 3 && current.status !== "flagged") {
+    const updated = await updateReportStatus(reportId, "flagged", "system");
+    if (updated) report = updated;
+  }
+
+  return { report, flagCount: count };
 }
 
 export async function updateReportLocation(id: number, locationLabel: string) {

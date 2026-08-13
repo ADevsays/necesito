@@ -95,6 +95,7 @@ function renderList() {
       "medication": "MEDICAMENTOS",
       "vulnerable": "VULNERABLE",
       "missing": "DESAPARECIDO",
+      "pets": "MASCOTA",
       "other": "OTRO"
     };
     
@@ -144,10 +145,11 @@ function renderList() {
       ${photoHtml}
       <div class="pending-meta" style="margin-top:1rem; border-top: 1px solid #333; padding-top:0.5rem;">Registrado ${fmtAgo(report.created_at)}<br>VOLUNTARIO: ${report.volunteer_name || 'Anónimo'} (${report.phone || 'Sin número'})</div>
       
-      <div class="status-actions" style="margin-top:1rem; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:0.5rem;">
+      <div class="status-actions" style="margin-top:1rem; display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:0.5rem;">
         <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem;" data-id="${report.id}" data-action="in_progress">En proceso</button>
         <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem;" data-id="${report.id}" data-action="resolved">Resuelto</button>
         <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem;" data-id="${report.id}" data-action="invalid">Descartado</button>
+        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem; background: #991b1b; color: white; border: none;" data-id="${report.id}" data-action="flag">⚠ Reportar</button>
       </div>
     `;
     
@@ -161,8 +163,36 @@ function renderList() {
       if (!btnEl) return;
       
       const id = btnEl.dataset.id;
-      const status = btnEl.dataset.action;
+      const action = btnEl.dataset.action;
+      const volunteerId = localStorage.getItem('volunteerId') || 'anonymous_coordinator';
       
+      if (action === "flag") {
+        if (!confirm("¿Reportar este caso como falso o spam?")) return;
+        try {
+          const res = await fetch(`/api/reports/${id}/flag`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ flagged_by: volunteerId, reason: "falso/spam" })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            btnEl.textContent = `⚠ ${data.flagCount} reportes`;
+            if (data.report.status === "flagged") {
+               const cardEl = btnEl.closest('.pending-item');
+               if (cardEl) cardEl.style.display = 'none'; // Auto hide
+            }
+          } else {
+             const err = await res.json().catch(()=>({}));
+             if (err.error === "already_flagged") alert("Ya reportaste este caso.");
+             else alert("Error: " + (err.error || res.status));
+          }
+        } catch (err) {
+          alert("Error de red: " + err.message);
+        }
+        return;
+      }
+      
+      const status = action;
       try {
         const response = await fetch(`/api/reports/${id}/status`, {
           method: "PATCH",

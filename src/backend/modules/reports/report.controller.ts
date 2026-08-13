@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { env } from "../../config/env.js";
-import { getReportHistory, listReports, syncReports, updateReportStatus, updateReportLocation } from "./report.service.js";
+import { getReportHistory, listReports, syncReports, updateReportStatus, updateReportLocation, flagReport } from "./report.service.js";
 
 function authOk(req: Request) {
   if (!env.coordinatorToken) return true;
@@ -12,6 +12,38 @@ function authOk(req: Request) {
 function sanitizeText(value: unknown, maxLength = 80) {
   if (typeof value !== "string") return "";
   return value.replace(/[<>]/g, "").trim().slice(0, maxLength);
+}
+
+export async function flagReportHandler(req: Request, res: Response) {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) {
+    res.status(400).json({ error: "invalid_id" });
+    return;
+  }
+  
+  const flaggedBy = sanitizeText(req.body?.flagged_by, 80);
+  const reason = sanitizeText(req.body?.reason, 80) || "user_report";
+  
+  if (!flaggedBy) {
+    res.status(400).json({ error: "missing_volunteer_id" });
+    return;
+  }
+  
+  try {
+    const result = await flagReport(id, flaggedBy, reason);
+    res.json(result);
+  } catch (error) {
+    if (error instanceof Error && error.message === "not_found") {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
+    if (error instanceof Error && error.message === "already_flagged") {
+      res.status(409).json({ error: "already_flagged" });
+      return;
+    }
+    console.error(error);
+    res.status(500).json({ error: "internal_error" });
+  }
 }
 
 export async function syncReportsHandler(req: Request, res: Response) {

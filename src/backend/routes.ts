@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { getReportHistoryHandler, getReportsHandler, patchReportStatusHandler, patchReportLocationHandler, syncReportsHandler } from "./modules/reports/report.controller.js";
+import { 
+  getReportHistoryHandler, 
+  getReportsHandler, 
+  patchReportStatusHandler, 
+  patchReportLocationHandler, 
+  syncReportsHandler,
+  flagReportHandler 
+} from "./modules/reports/report.controller.js";
 import { postNotificationSubscribeHandler } from "./modules/push/push.controller.js";
 
 export function createRoutes() {
@@ -13,6 +20,7 @@ export function createRoutes() {
   router.get("/api/reports", getReportsHandler);
   router.patch("/api/reports/:id/status", patchReportStatusHandler);
   router.patch("/api/reports/:id/location", patchReportLocationHandler);
+  router.post("/api/reports/:id/flag", flagReportHandler);
   router.get("/api/reports/:id/history", getReportHistoryHandler);
   router.post("/api/notifications/subscribe", postNotificationSubscribeHandler);
 

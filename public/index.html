@@ -6,6 +6,8 @@
     <meta name="theme-color" content="#111111" />
     <title>Necesito Colombia</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <link rel="icon" href="/icon-192.png" type="image/png" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0a0a0a" />
@@ -93,15 +95,16 @@
           <button class="btn-large" data-need="medication"><span style="font-size: 1.5rem">💊</span> MEDICAMENTOS</button>
           <button class="btn-large" data-need="vulnerable"><span style="font-size: 1.5rem">👶</span> VULNERABLE</button>
           <button class="btn-large" data-need="missing"><span style="font-size: 1.5rem">👤</span> DESAPARECIDO</button>
+          <button class="btn-large" data-need="pets"><span style="font-size: 1.5rem">🐾</span> MASCOTA</button>
           <button class="btn-large" data-need="other"><span style="font-size: 1.5rem">📦</span> OTRO</button>
         </div>
 
         <!-- PRIORITY -->
         <h2>¿QUÉ TAN URGENTE ES?</h2>
         <div class="mb-6">
-          <button class="btn-large mb-2" data-priority="critical" style="width:100%;">🔴 CRÍTICO<span class="micro">Riesgo inmediato para la vida</span></button>
-          <button class="btn-large mb-2" data-priority="urgent" style="width:100%;">🟠 URGENTE<span class="micro">Necesita ayuda pronto</span></button>
-          <button class="btn-large mb-2" data-priority="needed" style="width:100%;">🟢 NECESARIO<span class="micro">Importante pero no peligroso</span></button>
+          <button class="btn-large mb-2" data-priority="critical" style="width:100%;">🔴 CRÍTICO<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Riesgo inmediato para la vida</span></button>
+          <button class="btn-large mb-2" data-priority="urgent" style="width:100%;">🟠 URGENTE<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Necesita ayuda pronto</span></button>
+          <button class="btn-large mb-2" data-priority="needed" style="width:100%;">🟢 NECESARIO<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Importante pero no peligroso</span></button>
         </div>
 
         <!-- PEOPLE -->
@@ -177,11 +180,25 @@
 
       <!-- VIEW: PENDING -->
       <section id="view-pending" class="view">
-        <h1 class="mb-6">REPORTES PENDIENTES</h1>
+        <h1 class="mb-2">REPORTES PENDIENTES</h1>
+        <p class="mb-6" style="color:var(--primary); font-size:0.9rem;">¿No crees tener conexión pronto? Pásale tus reportes por Bluetooth o QR a un voluntario de Necesito que sí y él los subirá por ti.</p>
+        
         <button id="btnBackFromPending" class="btn-massive secondary mb-6">⬅ VOLVER</button>
+        <button id="btnScanQR" class="btn-massive accent mb-6" style="background:#0284c7; border-color:#0369a1;">📷 ESCANEAR QR DE OTRO VOLUNTARIO</button>
         
         <div id="pendingList"></div>
       </section>
+
+      <!-- QR SCANNER / DISPLAY MODAL -->
+      <div id="qrModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; padding:2rem; overflow-y:auto;">
+        <div style="background:var(--bg); border-radius:var(--radius); padding:2rem; max-width:500px; margin:0 auto; text-align:center;">
+          <h2 id="qrModalTitle" class="mb-4">Código QR</h2>
+          <div id="qrCodeContainer" style="background:white; padding:1rem; display:inline-block; border-radius:8px; margin-bottom:1rem;"></div>
+          <div id="qrReader" style="width:100%; display:none; margin-bottom:1rem;"></div>
+          <p id="qrModalFeedback" class="mb-4" style="color:var(--primary);"></p>
+          <button class="btn-massive secondary" onclick="document.getElementById('qrModal').style.display='none'; if(window.html5QrCode) window.html5QrCode.stop().catch(()=>{});">CERRAR</button>
+        </div>
+      </div>
 
     </main>
     <script type="module" src="/app.js"></script>

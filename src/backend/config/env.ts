@@ -12,7 +12,7 @@ function loadLocalEnv() {
       if (index < 0) continue;
       const key = trimmed.slice(0, index).trim();
       const value = trimmed.slice(index + 1).trim();
-      if (!process.env[key]) process.env[key] = value;
+      if (process.env[key] === undefined) process.env[key] = value;
     }
   } catch {
     // optional local env file

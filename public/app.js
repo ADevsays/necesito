@@ -220,17 +220,133 @@ function renderPending() {
   for (const rep of pending) {
     const div = document.createElement("div");
     div.className = `pending-item ${rep.syncStatus}`;
-    const needs = rep.needs.length ? rep.needs.join(" + ").toUpperCase() : "SIN NECESIDAD";
+    
+    const NEED_LABELS = {
+      "rescue": "RESCATE", "medical": "MÉDICO", "water": "AGUA", "food": "COMIDA",
+      "shelter": "REFUGIO", "medication": "MEDICAMENTOS", "vulnerable": "VULNERABLE",
+      "missing": "DESAPARECIDO", "pets": "MASCOTA", "other": "OTRO"
+    };
+    const PRIORITY_LABELS = { "critical": "CRÍTICO", "urgent": "URGENTE", "needed": "NECESARIO" };
+    
+    const translatedNeeds = rep.needs.map(n => NEED_LABELS[n] || n).join(" + ").toUpperCase();
+    const needs = translatedNeeds || "SIN NECESIDAD";
+    const priorityStr = PRIORITY_LABELS[rep.priority] || rep.priority || 'NORMAL';
+    
     const loc = rep.location?.description ? rep.location.description : (rep.location?.latitude ? "GPS" : "Sin ubicación");
     div.innerHTML = `
       <div class="pending-title">${needs}</div>
-      <div class="pending-meta">${rep.peopleCount} personas · ${rep.priority || 'NORMAL'}</div>
+      <div class="pending-meta">${rep.peopleCount} personas · ${priorityStr}</div>
       <div class="pending-meta">📍 ${loc} · Hace un momento</div>
       <div class="pending-meta mt-4" style="color:var(--urgent)">🟠 PENDIENTE DE SINCRONIZACIÓN</div>
+      
+      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+        <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="shareReportOffline('${rep.localId}')">📤 COMPARTIR</button>
+        <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="showQR('${rep.localId}')">📱 MOSTRAR QR</button>
+      </div>
     `;
     els.pendingList.appendChild(div);
   }
 }
+
+window.shareReportOffline = async function(localId) {
+  const rep = state.reports.find(r => r.localId === localId);
+  if (!rep) return;
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(rep))));
+  const shareUrl = window.location.origin + '/?import_p2p=' + payload;
+  
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Reporte de Emergencia Necesito',
+        text: '¡Hola! Ayúdame a subir este reporte de emergencia de Necesito escaneándolo o abriendo este enlace:',
+        url: shareUrl
+      });
+    } catch(err) {
+      console.log('Error compartiendo:', err);
+    }
+  } else {
+    alert("Tu navegador no soporta compartir nativo. Usa la opción de QR.");
+  }
+};
+
+window.showQR = function(localId) {
+  const rep = state.reports.find(r => r.localId === localId);
+  if (!rep) return;
+  
+  // Remove photos to fit in QR
+  const clone = { ...rep };
+  delete clone.photos;
+  
+  const payload = 'NECESITO_PAYLOAD:' + btoa(unescape(encodeURIComponent(JSON.stringify(clone))));
+  
+  document.getElementById('qrModalTitle').textContent = "Escanea con otro celular";
+  document.getElementById('qrCodeContainer').style.display = 'inline-block';
+  document.getElementById('qrCodeContainer').innerHTML = '';
+  document.getElementById('qrReader').style.display = 'none';
+  document.getElementById('qrModalFeedback').textContent = "Pídele a un voluntario con internet que escanee este código.";
+  
+  new QRCode(document.getElementById("qrCodeContainer"), {
+    text: payload,
+    width: 300,
+    height: 300,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.L
+  });
+  
+  document.getElementById('qrModal').style.display = 'block';
+};
+
+document.getElementById('btnScanQR')?.addEventListener('click', () => {
+  document.getElementById('qrModalTitle').textContent = "Escanear Código QR";
+  document.getElementById('qrCodeContainer').style.display = 'none';
+  document.getElementById('qrReader').style.display = 'block';
+  document.getElementById('qrModalFeedback').textContent = "Apunta la cámara al código QR de otro voluntario.";
+  document.getElementById('qrModal').style.display = 'block';
+  
+  if (window.html5QrCode) {
+    window.html5QrCode.stop().catch(()=>{});
+  }
+  
+  window.html5QrCode = new Html5Qrcode("qrReader");
+  window.html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 250 } },
+    async (decodedText) => {
+      if (decodedText.startsWith('NECESITO_PAYLOAD:')) {
+        try {
+          const b64 = decodedText.split('NECESITO_PAYLOAD:')[1];
+          const rep = JSON.parse(decodeURIComponent(escape(atob(b64))));
+          rep.syncStatus = 'pending'; // Force pending so it syncs
+          rep.source = 'p2p_offline';
+          
+          // Guardar en nuestra DB local
+          const existing = state.reports.find(r => r.localId === rep.localId);
+          if (!existing) {
+            state.reports.push(rep);
+            await saveReportsToIDB(state.reports);
+            renderPending();
+            document.getElementById('qrModalFeedback').textContent = "¡Reporte importado con éxito!";
+            document.getElementById('qrModalFeedback').style.color = "#10b981";
+            setTimeout(() => {
+              window.html5QrCode.stop().catch(()=>{});
+              document.getElementById('qrModal').style.display = 'none';
+              triggerSync();
+            }, 1500);
+          } else {
+             document.getElementById('qrModalFeedback').textContent = "Este reporte ya lo tenías guardado.";
+          }
+        } catch(e) {
+          document.getElementById('qrModalFeedback').textContent = "Error leyendo el QR. Formato inválido.";
+        }
+      }
+    },
+    (errorMessage) => {}
+  ).catch(err => {
+    document.getElementById('qrModalFeedback').textContent = "Error al abrir la cámara: " + err;
+  });
+});
+
 
 function openCapture(fastMode = false) {
   state.draft = resetDraft();
@@ -517,7 +633,35 @@ function wireUI() {
 
 // === Init ===
 async function init() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const p2pImport = urlParams.get('import_p2p');
+  
+  await initDB();
+  await loadProfile();
+  state.reports = await getReportsFromIDB();
+  
+  if (p2pImport) {
+    try {
+      const rep = JSON.parse(decodeURIComponent(escape(atob(p2pImport))));
+      rep.syncStatus = 'pending';
+      rep.source = 'p2p_offline';
+      const existing = state.reports.find(r => r.localId === rep.localId);
+      if (!existing) {
+        state.reports.push(rep);
+        await saveReportsToIDB(state.reports);
+        alert("¡Reporte importado con éxito desde el enlace!");
+      } else {
+        alert("Este reporte ya lo tenías guardado.");
+      }
+    } catch(e) {
+      alert("Enlace de importación inválido o corrupto.");
+    }
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+  
   wireUI();
+  updateNetworkState();
   const meta = await dbRead(STORE_META, "volunteer");
   if (meta && meta.value) {
     state.volunteer = meta.value;

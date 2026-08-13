@@ -2,8 +2,24 @@ import type { Client } from "@libsql/client";
 import { VolunteerModel } from "../modules/volunteers/volunteer.model.js";
 import { ReportHistoryModel, ReportModel, SyncEventModel } from "../modules/reports/report.model.js";
 import { PushSubscriptionModel } from "../modules/push/push.model.js";
+import { ReportFlagModel } from "../modules/reports/flag.model.js";
 
 export async function bootstrapDatabase(client: Client) {
+  await ReportFlagModel.init(
+    {
+      id: "INTEGER PRIMARY KEY AUTOINCREMENT",
+      report_id: "INTEGER NOT NULL",
+      flagged_by: "TEXT NOT NULL",
+      reason: "TEXT NOT NULL",
+      created_at: "TEXT NOT NULL",
+    },
+    {
+      tableName: "report_flags",
+      tursoInstance: client,
+      foreignData: [{ foreignKey: "report_id", table: "reports", tableId: "id" }],
+    }
+  );
+
   await PushSubscriptionModel.init(
     {
       id: "INTEGER PRIMARY KEY AUTOINCREMENT",
