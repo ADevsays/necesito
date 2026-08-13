@@ -110,7 +110,7 @@ function showView(viewEl) {
 
 // === Network & Sync ===
 async function checkRealConnection() {
-  if (!navigator.onLine) return false;
+  // En iOS (Safari) navigator.onLine a veces miente al iniciar la PWA
   try {
     const res = await fetch("/api/health", { method: "GET", cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
     return res.ok;
@@ -129,8 +129,20 @@ async function updateNetworkState() {
     els.statusBanner.className = "status-banner online";
     els.statusBanner.textContent = `🟢 CONECTADO${pending ? ` (${pending} pendientes)` : ""}`;
   } else {
+    // Asumimos offline pero verificamos por culpa de iOS
     els.statusBanner.className = "status-banner offline";
-    els.statusBanner.textContent = "🟠 SIN INTERNET — SE GUARDA LOCALMENTE";
+    els.statusBanner.textContent = "🟠 REVISANDO CONEXIÓN...";
+    
+    checkRealConnection().then(realOnline => {
+      if (realOnline) {
+        els.statusBanner.className = "status-banner online";
+        els.statusBanner.textContent = `🟢 CONECTADO${pending ? ` (${pending} pendientes)` : ""}`;
+        if (pending > 0) triggerSync();
+      } else {
+        els.statusBanner.className = "status-banner offline";
+        els.statusBanner.textContent = "🟠 SIN INTERNET — SE GUARDA LOCALMENTE";
+      }
+    });
   }
   
   els.btnViewPending.textContent = `📋 REPORTES PENDIENTES (${pending})`;
