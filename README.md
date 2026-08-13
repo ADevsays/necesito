@@ -6,11 +6,11 @@ Cuando pega un desastre, lo primero que se cae es la comunicación. Sin señal, 
 
 ## Cómo funciona
 
-Un voluntario en zona abre la app desde el celular, registra qué se necesita — rescate, médico, agua, comida, refugio — y el GPS marca el punto exacto. Si no hay señal en ese momento, no importa: el reporte se guarda en el teléfono y se envía solo cuando vuelve la conexión. No se pierde nada.
+Cualquier voluntario abre la app desde el celular, reporta lo que se necesita — rescate, atención médica, agua, comida, refugio — y el GPS marca el punto exacto. Si no hay señal en ese momento, no importa: el reporte se guarda en el teléfono y se envía solo cuando vuelve la conexión. No se pierde nada.
 
-Del otro lado, los coordinadores tienen un panel donde llegan todos los reportes en tiempo real. Pueden ver en qué zona hay más urgencia, qué casos están siendo atendidos y cuáles siguen esperando. Cuando entra algo crítico, a los rescatistas les llega una notificación directo al celular.
+Los mismos voluntarios pueden ver todos los reportes que van entrando en un panel compartido, filtrar por zona o prioridad, y marcar qué casos ya están siendo atendidos para no duplicar esfuerzos. Cuando entra un reporte crítico o urgente, les llega una notificación directo al celular a quienes estén suscritos a esa ciudad.
 
-La interfaz es fea a propósito. Alto contraste, letras grandes, botones que no fallan. Pensada para usarse con las manos sucias, el celular medio roto y poca luz.
+La interfaz está diseñada con alto contraste, letras grandes y botones claros. Pensada para usarse con las manos sucias, con poca luz o desde un celular con la pantalla medio rota.
 
 ## Stack
 
