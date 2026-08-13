@@ -1,65 +1,59 @@
-# 🚨 Necesito Colombia
+# Necesito
 
-**Necesito** es una plataforma de respuesta a emergencias y coordinación de rescates diseñada específicamente para operar en condiciones extremas y de baja conectividad. Construida con una arquitectura *Offline-first*, permite a víctimas y voluntarios registrar solicitudes urgentes (rescate, asistencia médica, suministros) incluso sin internet, sincronizándose automáticamente en cuanto la conexión se restablece.
+Plataforma de coordinación de emergencias para Colombia. Permite registrar y gestionar reportes de personas que necesitan ayuda (rescate, atención médica, agua, comida, refugio) durante desastres naturales o crisis humanitarias.
 
-## 🎯 Características Principales
+La app funciona sin internet. Los reportes se guardan en el dispositivo y se sincronizan cuando vuelve la conexión.
 
-*   **⚡ Offline-First (PWA):** La aplicación web funciona sin conexión. Los reportes creados sin internet se guardan localmente y se suben al servidor automáticamente tan pronto como hay red.
-*   **📍 Geolocalización de Precisión:** Captura coordenadas exactas por GPS para guiar a los equipos de rescate y voluntarios directamente al punto crítico, integrándose automáticamente con Google Maps.
-*   **🎛️ Dashboard de Coordinación:** Panel de control en tiempo real para centros de mando. Permite filtrar por estado, municipio, prioridad y gestionar el ciclo de vida del reporte (Nuevo > En Proceso > Resuelto > Descartado).
-*   **🔔 Alertas Push Inteligentes:** Notificaciones Push en tiempo real enviadas directamente a los dispositivos de los rescatistas cuando se reporta un caso "CRÍTICO" o "URGENTE" en su área de operaciones.
-*   **🎨 Diseño Brutalista y Accesible:** Interfaz de alto contraste, tipografía grande y botones claros, diseñada para ser utilizada bajo estrés, con guantes, o en pantallas dañadas/con brillo bajo.
+## Qué hace
 
-## 🛠️ Stack Tecnológico
+- **Registro de necesidades offline.** La gente puede reportar qué necesita aunque no tenga señal. Cuando el celular recupera conexión, todo se sube solo.
+- **Geolocalización.** Cada reporte incluye coordenadas GPS para que los equipos de respuesta sepan exactamente dónde ir.
+- **Panel de coordinación.** Los coordinadores ven todos los reportes en tiempo real, pueden filtrar por zona o prioridad, y marcar el estado de cada caso.
+- **Notificaciones push.** Cuando entra un reporte crítico o urgente, les llega una alerta directa al celular a los rescatistas que estén suscritos a esa ciudad.
+- **Interfaz de alto contraste.** Diseño brutalist pensado para usarse bajo estrés, con poca luz o pantallas dañadas. Botones grandes, texto legible, cero adornos.
 
-La plataforma fue construida buscando la máxima ligereza, velocidad de carga y facilidad de despliegue en cualquier entorno de crisis:
+## Stack
 
-*   **Frontend:** Vanilla JS, HTML5, CSS3 nativo. Sin frameworks pesados para garantizar tiempos de carga mínimos. Service Workers para caché offline.
-*   **Backend:** Node.js + Express (escrito en TypeScript).
-*   **Base de Datos:** SQLite Edge Serverless usando [Turso](https://turso.tech/) (LibSQL).
-*   **Notificaciones:** Web Push Protocol (`web-push`).
-*   **Despliegue:** Preparado nativamente para Docker / Dokploy / VPS.
+- Frontend: HTML, CSS, JS vanilla. Sin frameworks. Service Worker para caché offline.
+- Backend: Node.js + Express, TypeScript.
+- Base de datos: Turso (SQLite edge, LibSQL).
+- Notificaciones: Web Push con VAPID.
+- Despliegue: Docker. Preparado para Dokploy o cualquier VPS.
 
-## 🚀 Instalación y Despliegue Rápido
+## Cómo correrlo
 
-El repositorio incluye un `Dockerfile` optimizado, haciéndolo ideal para desplegar en plataformas PaaS como **Dokploy**, Vercel, Render, o un VPS tradicional usando Docker.
+### Variables de entorno
 
-### Variables de Entorno Requeridas (`.env`)
+Crea un archivo `.env` en la raíz:
+
 ```env
 PORT=3000
-TURSO_URL=libsql://tu-base-de-datos.turso.io
+TURSO_URL=libsql://tu-base.turso.io
 TURSO_AUTH_TOKEN=tu-token
-VAPID_PUBLIC_KEY=tu-llave-publica
-VAPID_PRIVATE_KEY=tu-llave-privada
-VAPID_SUBJECT=mailto:contacto@dominio.com
-COORDINATOR_TOKEN=tu-contraseña-dashboard
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:tu@correo.com
+COORDINATOR_TOKEN=contraseña-para-el-panel
 ```
 
-### Ejecutar Localmente para Desarrollo
+### Desarrollo local
 
 ```bash
-# 1. Instalar dependencias
 npm install
-
-# 2. Compilar TypeScript e iniciar en modo desarrollo
 npm run dev
 ```
 
-### Desplegar con Docker
+### Docker
+
 ```bash
-docker build -t necesito-app .
-docker run -p 3000:3000 --env-file .env necesito-app
+docker build -t necesito .
+docker run -p 3000:3000 --env-file .env necesito
 ```
 
-## 🤝 Contribuciones
+## Contribuir
 
-Este es un proyecto abierto pensado para ayudar en tiempos de crisis. Cualquier contribución que mejore la accesibilidad, reduzca el peso de la aplicación, o facilite la coordinación de los rescatistas es bienvenida.
-
-1. Haz un *Fork* del repositorio.
-2. Crea una rama para tu feature (`git checkout -b feature/MejoraIncreible`).
-3. Haz un *Commit* de tus cambios (`git commit -m 'Añade una mejora increíble'`).
-4. Sube la rama (`git push origin feature/MejoraIncreible`).
-5. Abre un Pull Request.
+Si querés aportar algo, hacé un fork, creá una rama y mandá un PR. No hay reglas formales por ahora, solo que el código sea limpio y que no rompa lo que ya funciona.
 
 ---
-*Construido para resistir. Construido para salvar vidas.*
+
+Hecho para cuando la gente necesita ayuda y la infraestructura no alcanza.
