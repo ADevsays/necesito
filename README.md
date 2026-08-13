@@ -1,34 +1,32 @@
-# Necesito
+# 🆘 Necesito
 
-Cuando hay un desastre, la infraestructura se cae primero. Sin señal, sin internet, sin forma de pedir ayuda. La gente queda aislada justo cuando más necesita ser encontrada.
+Cuando pega un desastre, lo primero que se cae es la comunicación. Sin señal, sin internet, sin forma de avisar que hay gente atrapada tres cuadras más abajo. La ayuda existe pero no sabe dónde ir, y los que necesitan ayuda no tienen cómo pedirla.
 
-**Necesito** nació de esa realidad. Es una plataforma de coordinación de emergencias para Colombia que permite registrar y gestionar reportes de personas que necesitan ayuda — rescate, atención médica, agua, comida, refugio — durante desastres naturales o crisis humanitarias.
+**Necesito** es una plataforma de coordinación de emergencias construida para funcionar justamente cuando todo lo demás falla. Nació durante la crisis en Colombia, con una premisa simple: que alguien pueda decir "acá necesitamos ayuda" incluso sin conexión a internet.
 
-La app funciona sin internet. Los reportes se guardan en el dispositivo y se sincronizan cuando vuelve la conexión. No depende de que haya señal para que alguien pueda decir "aquí estoy, necesito ayuda".
+## Cómo funciona
 
-## Qué hace
+Un voluntario en zona abre la app desde el celular, registra qué se necesita — rescate, médico, agua, comida, refugio — y el GPS marca el punto exacto. Si no hay señal en ese momento, no importa: el reporte se guarda en el teléfono y se envía solo cuando vuelve la conexión. No se pierde nada.
 
-- **Registro offline.** Un voluntario en zona puede registrar necesidades sin señal. Cuando el celular recupera conexión, todo se sube solo. No se pierde nada.
-- **Geolocalización.** Cada reporte lleva coordenadas GPS exactas. No direcciones escritas a mano que nadie encuentra — un punto en el mapa que lleva al equipo de rescate directo al sitio.
-- **Panel de coordinación.** Los coordinadores ven todos los reportes en tiempo real, filtran por zona o prioridad, y marcan el estado de cada caso para que no se duplique esfuerzo.
-- **Alertas push.** Cuando entra un reporte crítico, les llega una notificación directa al celular a los rescatistas suscritos a esa ciudad. Sin tener que estar refrescando la pantalla.
-- **Interfaz de alto contraste.** Diseño pensado para usarse bajo estrés, con poca luz, con las manos sucias o en pantallas rotas. Botones grandes, texto legible, cero adornos innecesarios.
+Del otro lado, los coordinadores tienen un panel donde llegan todos los reportes en tiempo real. Pueden ver en qué zona hay más urgencia, qué casos están siendo atendidos y cuáles siguen esperando. Cuando entra algo crítico, a los rescatistas les llega una notificación directo al celular.
+
+La interfaz es fea a propósito. Alto contraste, letras grandes, botones que no fallan. Pensada para usarse con las manos sucias, el celular medio roto y poca luz.
 
 ## Stack
 
-No se usaron frameworks pesados a propósito. En una emergencia cada segundo de carga cuenta.
+No hay frameworks de frontend. Cada kilobyte de más es un segundo que alguien con 2G tiene que esperar.
 
-- Frontend: HTML, CSS, JS vanilla. Service Worker para caché offline.
-- Backend: Node.js + Express, TypeScript.
-- Base de datos: Turso (SQLite edge, LibSQL).
-- Notificaciones: Web Push con VAPID.
-- Despliegue: Docker. Preparado para Dokploy o cualquier VPS.
+- HTML, CSS, JS vanilla + Service Worker para offline
+- Node.js + Express (TypeScript) en el backend
+- Turso (SQLite edge) como base de datos
+- Web Push para las alertas
+- Docker para desplegar donde sea
 
-## Cómo correrlo
+## Levantar el proyecto
 
 ### Variables de entorno
 
-Crea un archivo `.env` en la raíz:
+Crea un `.env` en la raíz:
 
 ```env
 PORT=3000
@@ -40,7 +38,7 @@ VAPID_SUBJECT=mailto:tu@correo.com
 COORDINATOR_TOKEN=contraseña-para-el-panel
 ```
 
-### Desarrollo local
+### Desarrollo
 
 ```bash
 npm install
@@ -56,8 +54,8 @@ docker run -p 3000:3000 --env-file .env necesito
 
 ## Contribuir
 
-Si querés aportar algo, hacé un fork, creá una rama y mandá un PR. No hay burocracia, solo que el código sea limpio y que no rompa lo que ya funciona. Cualquier mejora que haga esto más rápido, más liviano o más útil en terreno es bienvenida.
+No hay un proceso formal. Si ves algo que se puede mejorar, hacé un fork y mandá un PR. Lo único que importa es que funcione y que no pese más de lo necesario. Cada gramo cuenta cuando la conexión es un lujo.
 
 ---
 
-Hecho porque alguien lo necesitaba. Ojalá no hiciera falta.
+Ojalá no hiciera falta. Pero hace falta.
