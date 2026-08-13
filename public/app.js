@@ -652,7 +652,6 @@ async function init() {
   const urlParams = new URLSearchParams(window.location.search);
   const p2pImport = urlParams.get('import_p2p');
   
-  await initDB();
   await loadProfile();
   state.reports = await getReportsFromIDB();
   
