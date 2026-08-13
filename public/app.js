@@ -109,14 +109,18 @@ function showView(viewEl) {
 }
 
 // === Network & Sync ===
-async function checkRealConnection() {
+async function checkRealConnection(retries = 2) {
   // En iOS (Safari) navigator.onLine a veces miente al iniciar la PWA
-  try {
-    const res = await fetch("/api/health", { method: "GET", cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
-    return res.ok;
-  } catch (err) {
-    return false;
+  // y las peticiones fallan si la antena de red apenas está despertando.
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch("/api/health", { method: "GET", cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
+      if (res.ok) return true;
+    } catch (err) {
+      if (i < retries) await new Promise(r => setTimeout(r, 1000));
+    }
   }
+  return false;
 }
 
 async function updateNetworkState() {
