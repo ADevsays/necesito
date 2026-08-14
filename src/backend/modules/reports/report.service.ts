@@ -183,9 +183,14 @@ export async function listReports(filters: {
       if (normalizedPriority && report.priority !== normalizedPriority) return false;
       
       const actualStatus = (report.status || "new").toLowerCase();
-      // If no status is specified in filters, exclude "flagged" by default
-      if (!normalizedStatus && actualStatus === "flagged") return false;
-      if (normalizedStatus && actualStatus !== normalizedStatus) return false;
+      
+      if (normalizedStatus === "all") {
+        if (actualStatus === "flagged") return false;
+      } else if (!normalizedStatus) {
+        if (actualStatus === "flagged" || actualStatus === "invalid") return false;
+      } else {
+        if (actualStatus !== normalizedStatus) return false;
+      }
       
       if (createdAfter && new Date(report.created_at) <= createdAfter) return false;
       return true;
