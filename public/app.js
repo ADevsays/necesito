@@ -340,21 +340,33 @@ document.getElementById('btnScanQR')?.addEventListener('click', () => {
           const existing = state.reports.find(r => r.localId === rep.localId);
           if (!existing) {
             state.reports.push(rep);
-            await saveReportsToIDB(state.reports);
+            await dbWrite(STORE_REPORTS, rep); // Corrección del bug
             renderPending();
             document.getElementById('qrModalFeedback').textContent = "¡Reporte importado con éxito!";
             document.getElementById('qrModalFeedback').style.color = "#10b981";
+            
+            // Evitar escaneos duplicados en ráfaga
+            if (window.html5QrCode) {
+              window.html5QrCode.pause();
+            }
+            
             setTimeout(() => {
-              window.html5QrCode.stop().catch(()=>{});
+              if (window.html5QrCode) {
+                 window.html5QrCode.stop().catch(()=>{});
+              }
               document.getElementById('qrModal').style.display = 'none';
-              triggerSync();
+              syncPending(); // Usar la función correcta
             }, 1500);
           } else {
-             document.getElementById('qrModalFeedback').textContent = "Este reporte ya lo tenías guardado.";
+             document.getElementById('qrModalFeedback').textContent = "Este reporte ya lo habías importado.";
           }
         } catch(e) {
-          document.getElementById('qrModalFeedback').textContent = "Error leyendo el QR. Formato inválido.";
+          console.error("QR Error:", e);
+          document.getElementById('qrModalFeedback').textContent = "Error interno procesando el QR.";
         }
+      } else if (decodedText.includes('import_p2p=')) {
+        // Soporte si escanean la URL en lugar del raw payload
+        window.location.href = decodedText;
       }
     },
     (errorMessage) => {}
