@@ -135,9 +135,12 @@ function renderList() {
        } catch(e) {}
     }
 
+    item.style.position = 'relative';
     item.innerHTML = `
       ${dupWarning}
-      <div class="pending-title" style="color:var(--${report.priority === 'needed' ? 'needed' : report.priority})">${priorityLabel(report.priority)}</div>
+      <button class="btn-large" style="position: absolute; top: 1rem; right: 1rem; padding: 0.5rem 1rem; font-size: 0.85rem; background: #991b1b; color: white; border: none; width: auto; z-index: 10;" data-id="${report.id}" data-action="flag">⚠ Reportar</button>
+      
+      <div class="pending-title" style="color:var(--${report.priority === 'needed' ? 'needed' : report.priority}); padding-right: 100px;">${priorityLabel(report.priority)}</div>
       <div class="pending-title" style="margin-top:0.5rem;">${needs}</div>
       <div class="pending-meta" style="margin-top:0.5rem; font-size: 1rem; color: white;">${details}</div>
       ${locHtml}
@@ -145,11 +148,10 @@ function renderList() {
       ${photoHtml}
       <div class="pending-meta" style="margin-top:1rem; border-top: 1px solid #333; padding-top:0.5rem;">Registrado ${fmtAgo(report.created_at)}<br>VOLUNTARIO: ${report.volunteer_name || 'Anónimo'} (${report.phone || 'Sin número'})</div>
       
-      <div class="status-actions" style="margin-top:1rem; display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:0.5rem;">
-        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem;" data-id="${report.id}" data-action="in_progress">En proceso</button>
-        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem;" data-id="${report.id}" data-action="resolved">Resuelto</button>
-        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem;" data-id="${report.id}" data-action="invalid">Descartado</button>
-        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem; background: #991b1b; color: white; border: none;" data-id="${report.id}" data-action="flag">⚠ Reportar</button>
+      <div class="status-actions" style="margin-top:1rem; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:0.5rem;">
+        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; text-align: center;" data-id="${report.id}" data-action="in_progress">En proceso</button>
+        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; text-align: center;" data-id="${report.id}" data-action="resolved">Resuelto</button>
+        <button class="btn-large" style="padding: 0.5rem; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; text-align: center;" data-id="${report.id}" data-action="invalid">Descartar</button>
       </div>
     `;
     
