@@ -44,16 +44,46 @@ function reportRowToDomain(report: ReportRecord) {
   };
 }
 
+function processPhotoBase64(dataUrl: string | undefined, localId: string, index: number): string {
+  if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
+    return dataUrl || "";
+  }
+  
+  try {
+    const matches = dataUrl.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) return dataUrl;
+    
+    const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, "base64");
+    
+    const filename = `report_${localId.slice(0,8)}_${index}_${randomUUID().slice(0,6)}.${ext}`;
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    const filepath = path.join(uploadDir, filename);
+    fs.writeFileSync(filepath, buffer);
+    
+    return `/uploads/${filename}`;
+  } catch(e) {
+    console.error("Error saving image:", e);
+    return dataUrl; 
+  }
+}
+
 function normalizeReportPayload(payload: ReportSyncInput) {
   const location = payload.location ?? null;
   const needs = Array.isArray(payload.needs)
     ? [...new Set(payload.needs.map((item) => cleanText(item, 40)).filter(Boolean))].slice(0, 10)
     : [];
+  const local_id = cleanText(payload.local_id, 80) || randomUUID();
   const photos = Array.isArray(payload.photos)
-    ? payload.photos.slice(0, 2).map((photo) => ({
+    ? payload.photos.slice(0, 2).map((photo, index) => ({
         name: cleanText(photo?.name || "photo", 80),
         type: cleanText(photo?.type || "image/jpeg", 40),
-        dataUrl: typeof photo?.dataUrl === "string" ? photo.dataUrl : "",
+        dataUrl: processPhotoBase64(photo?.dataUrl, local_id, index),
         size: toNumber(photo?.size),
       }))
     : [];

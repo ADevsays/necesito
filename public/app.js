@@ -242,7 +242,7 @@ function renderPending() {
       "shelter": "REFUGIO", "medication": "MEDICAMENTOS", "vulnerable": "VULNERABLE",
       "missing": "DESAPARECIDO", "pets": "MASCOTA", "other": "OTRO"
     };
-    const PRIORITY_LABELS = { "critical": "CRÍTICO", "urgent": "URGENTE", "needed": "NECESARIO" };
+    const PRIORITY_LABELS = { "critical": "CRÍTICO", "urgent": "URGENTE", "necessary": "NECESARIO" };
     
     const translatedNeeds = rep.needs.map(n => NEED_LABELS[n] || n).join(" + ").toUpperCase();
     const needs = translatedNeeds || "SIN NECESIDAD";
@@ -633,7 +633,7 @@ function wireUI() {
       createdAt: new Date().toISOString(),
       location: state.draft.location,
       needs: Array.from(state.draft.needs),
-      priority: state.draft.priority || "needed",
+      priority: state.draft.priority || "necessary",
       peopleCount: state.draft.peopleCount,
       injured: state.draft.injured,
       trapped: state.draft.trapped,

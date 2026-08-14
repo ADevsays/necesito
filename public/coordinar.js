@@ -20,13 +20,13 @@ function fmtAgo(iso) {
 }
 
 function priorityOrder(priority) {
-  return { critical: 0, urgent: 1, needed: 2 }[priority] ?? 3;
+  return { critical: 0, urgent: 1, necessary: 2 }[priority] ?? 3;
 }
 
 function priorityLabel(p) {
   if (p === 'critical') return '🔴 CRÍTICO';
   if (p === 'urgent') return '🟠 URGENTE';
-  if (p === 'needed') return '🟢 NECESARIO';
+  if (p === 'necessary') return '🟢 NECESARIO';
   return p;
 }
 
@@ -140,7 +140,7 @@ function renderList() {
       ${dupWarning}
       <button class="btn-large" style="position: absolute; top: 1rem; right: 1rem; padding: 0.5rem 1rem; font-size: 0.85rem; background: #991b1b; color: white; border: none; width: auto; z-index: 10;" data-id="${report.id}" data-action="flag">⚠ Reportar</button>
       
-      <div class="pending-title" style="color:var(--${report.priority === 'needed' ? 'needed' : report.priority}); padding-right: 100px;">${priorityLabel(report.priority)}</div>
+      <div class="pending-title" style="color:var(--${report.priority === 'necessary' ? 'necessary' : report.priority}); padding-right: 100px;">${priorityLabel(report.priority)}</div>
       <div class="pending-title" style="margin-top:0.5rem;">${needs}</div>
       <div class="pending-meta" style="margin-top:0.5rem; font-size: 1rem; color: white;">${details}</div>
       ${locHtml}
