@@ -1,4 +1,4 @@
-const DB_NAME = "necesito-db";
+﻿const DB_NAME = "necesito-db";
 const STORE_REPORTS = "reports";
 const STORE_META = "meta";
 
@@ -109,18 +109,14 @@ function showView(viewEl) {
 }
 
 // === Network & Sync ===
-async function checkRealConnection(retries = 2) {
-  // En iOS (Safari) navigator.onLine a veces miente al iniciar la PWA
-  // y las peticiones fallan si la antena de red apenas está despertando.
-  for (let i = 0; i <= retries; i++) {
-    try {
-      const res = await fetch("/api/health", { method: "GET", cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
-      if (res.ok) return true;
-    } catch (err) {
-      if (i < retries) await new Promise(r => setTimeout(r, 1000));
-    }
+async function checkRealConnection() {
+  if (!navigator.onLine) return false;
+  try {
+    const res = await fetch("/api/health", { method: "GET", cache: "no-store", headers: { 'Cache-Control': 'no-cache' } });
+    return res.ok;
+  } catch (err) {
+    return false;
   }
-  return false;
 }
 
 async function updateNetworkState() {
@@ -128,28 +124,16 @@ async function updateNetworkState() {
   
   if (state.syncing) {
     els.statusBanner.className = "status-banner online";
-    els.statusBanner.textContent = "🔄 SINCRONIZANDO...";
+    els.statusBanner.textContent = "­ƒöä SINCRONIZANDO...";
   } else if (navigator.onLine) {
     els.statusBanner.className = "status-banner online";
-    els.statusBanner.textContent = `🟢 CONECTADO${pending ? ` (${pending} pendientes)` : ""}`;
+    els.statusBanner.textContent = `­ƒƒó CONECTADO${pending ? ` (${pending} pendientes)` : ""}`;
   } else {
-    // Asumimos offline pero verificamos por culpa de iOS
     els.statusBanner.className = "status-banner offline";
-    els.statusBanner.textContent = "🟠 REVISANDO CONEXIÓN...";
-    
-    checkRealConnection().then(realOnline => {
-      if (realOnline) {
-        els.statusBanner.className = "status-banner online";
-        els.statusBanner.textContent = `🟢 CONECTADO${pending ? ` (${pending} pendientes)` : ""}`;
-        if (pending > 0) triggerSync();
-      } else {
-        els.statusBanner.className = "status-banner offline";
-        els.statusBanner.textContent = "🟠 SIN INTERNET — SE GUARDA LOCALMENTE";
-      }
-    });
+    els.statusBanner.textContent = "­ƒƒá SIN INTERNET ÔÇö SE GUARDA LOCALMENTE";
   }
   
-  els.btnViewPending.textContent = `📋 REPORTES PENDIENTES (${pending})`;
+  els.btnViewPending.textContent = `­ƒôï REPORTES PENDIENTES (${pending})`;
 }
 
 async function syncPending() {
@@ -236,133 +220,17 @@ function renderPending() {
   for (const rep of pending) {
     const div = document.createElement("div");
     div.className = `pending-item ${rep.syncStatus}`;
-    
-    const NEED_LABELS = {
-      "rescue": "RESCATE", "medical": "MÉDICO", "water": "AGUA", "food": "COMIDA",
-      "shelter": "REFUGIO", "medication": "MEDICAMENTOS", "vulnerable": "VULNERABLE",
-      "missing": "DESAPARECIDO", "pets": "MASCOTA", "other": "OTRO"
-    };
-    const PRIORITY_LABELS = { "critical": "CRÍTICO", "urgent": "URGENTE", "needed": "NECESARIO" };
-    
-    const translatedNeeds = rep.needs.map(n => NEED_LABELS[n] || n).join(" + ").toUpperCase();
-    const needs = translatedNeeds || "SIN NECESIDAD";
-    const priorityStr = PRIORITY_LABELS[rep.priority] || rep.priority || 'NORMAL';
-    
-    const loc = rep.location?.description ? rep.location.description : (rep.location?.latitude ? "GPS" : "Sin ubicación");
+    const needs = rep.needs.length ? rep.needs.join(" + ").toUpperCase() : "SIN NECESIDAD";
+    const loc = rep.location?.description ? rep.location.description : (rep.location?.latitude ? "GPS" : "Sin ubicaci├│n");
     div.innerHTML = `
       <div class="pending-title">${needs}</div>
-      <div class="pending-meta">${rep.peopleCount} personas · ${priorityStr}</div>
-      <div class="pending-meta">📍 ${loc} · Hace un momento</div>
-      <div class="pending-meta mt-4" style="color:var(--urgent)">🟠 PENDIENTE DE SINCRONIZACIÓN</div>
-      
-      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-        <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="shareReportOffline('${rep.localId}')">📤 COMPARTIR</button>
-        <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="showQR('${rep.localId}')">📱 MOSTRAR QR</button>
-      </div>
+      <div class="pending-meta">${rep.peopleCount} personas ┬À ${rep.priority || 'NORMAL'}</div>
+      <div class="pending-meta">­ƒôì ${loc} ┬À Hace un momento</div>
+      <div class="pending-meta mt-4" style="color:var(--urgent)">­ƒƒá PENDIENTE DE SINCRONIZACI├ôN</div>
     `;
     els.pendingList.appendChild(div);
   }
 }
-
-window.shareReportOffline = async function(localId) {
-  const rep = state.reports.find(r => r.localId === localId);
-  if (!rep) return;
-  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(rep))));
-  const shareUrl = window.location.origin + '/?import_p2p=' + payload;
-  
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: 'Reporte de Emergencia Necesito',
-        text: '¡Hola! Ayúdame a subir este reporte de emergencia de Necesito escaneándolo o abriendo este enlace:',
-        url: shareUrl
-      });
-    } catch(err) {
-      console.log('Error compartiendo:', err);
-    }
-  } else {
-    alert("Tu navegador no soporta compartir nativo. Usa la opción de QR.");
-  }
-};
-
-window.showQR = function(localId) {
-  const rep = state.reports.find(r => r.localId === localId);
-  if (!rep) return;
-  
-  // Remove photos to fit in QR
-  const clone = { ...rep };
-  delete clone.photos;
-  
-  const payload = 'NECESITO_PAYLOAD:' + btoa(unescape(encodeURIComponent(JSON.stringify(clone))));
-  
-  document.getElementById('qrModalTitle').textContent = "Escanea con otro celular";
-  document.getElementById('qrCodeContainer').style.display = 'inline-block';
-  document.getElementById('qrCodeContainer').innerHTML = '';
-  document.getElementById('qrReader').style.display = 'none';
-  document.getElementById('qrModalFeedback').textContent = "Pídele a un voluntario con internet que escanee este código.";
-  
-  new QRCode(document.getElementById("qrCodeContainer"), {
-    text: payload,
-    width: 300,
-    height: 300,
-    colorDark : "#000000",
-    colorLight : "#ffffff",
-    correctLevel : QRCode.CorrectLevel.L
-  });
-  
-  document.getElementById('qrModal').style.display = 'block';
-};
-
-document.getElementById('btnScanQR')?.addEventListener('click', () => {
-  document.getElementById('qrModalTitle').textContent = "Escanear Código QR";
-  document.getElementById('qrCodeContainer').style.display = 'none';
-  document.getElementById('qrReader').style.display = 'block';
-  document.getElementById('qrModalFeedback').textContent = "Apunta la cámara al código QR de otro voluntario.";
-  document.getElementById('qrModal').style.display = 'block';
-  
-  if (window.html5QrCode) {
-    window.html5QrCode.stop().catch(()=>{});
-  }
-  
-  window.html5QrCode = new Html5Qrcode("qrReader");
-  window.html5QrCode.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    async (decodedText) => {
-      if (decodedText.startsWith('NECESITO_PAYLOAD:')) {
-        try {
-          const b64 = decodedText.split('NECESITO_PAYLOAD:')[1];
-          const rep = JSON.parse(decodeURIComponent(escape(atob(b64))));
-          rep.syncStatus = 'pending'; // Force pending so it syncs
-          rep.source = 'p2p_offline';
-          
-          // Guardar en nuestra DB local
-          const existing = state.reports.find(r => r.localId === rep.localId);
-          if (!existing) {
-            state.reports.push(rep);
-            await saveReportsToIDB(state.reports);
-            renderPending();
-            document.getElementById('qrModalFeedback').textContent = "¡Reporte importado con éxito!";
-            document.getElementById('qrModalFeedback').style.color = "#10b981";
-            setTimeout(() => {
-              window.html5QrCode.stop().catch(()=>{});
-              document.getElementById('qrModal').style.display = 'none';
-              triggerSync();
-            }, 1500);
-          } else {
-             document.getElementById('qrModalFeedback').textContent = "Este reporte ya lo tenías guardado.";
-          }
-        } catch(e) {
-          document.getElementById('qrModalFeedback').textContent = "Error leyendo el QR. Formato inválido.";
-        }
-      }
-    },
-    (errorMessage) => {}
-  ).catch(err => {
-    document.getElementById('qrModalFeedback').textContent = "Error al abrir la cámara: " + err;
-  });
-});
-
 
 function openCapture(fastMode = false) {
   state.draft = resetDraft();
@@ -383,7 +251,7 @@ function openCapture(fastMode = false) {
   els.photoPreview.src = "";
   els.photoInput.value = "";
   els.btnCapturePhoto.style.display = "block";
-  els.btnCapturePhoto.textContent = "📷 TOMAR FOTO";
+  els.btnCapturePhoto.textContent = "­ƒôÀ TOMAR FOTO";
   
   els.fullFormSection.style.display = fastMode ? "none" : "block";
   showView(els.viewCapture);
@@ -411,9 +279,9 @@ async function captureGps() {
       },
       err => {
         if (err.code === 1) {
-          els.locationFeedback.textContent = "Permiso GPS denegado. Debes ir a la Configuración de tu celular/navegador, permitir la Ubicación y recargar la página.";
+          els.locationFeedback.textContent = "Permiso GPS denegado. Debes ir a la Configuraci├│n de tu celular/navegador, permitir la Ubicaci├│n y recargar la p├ígina.";
         } else if (err.code === 3) {
-          els.locationFeedback.textContent = "El GPS tardó mucho en responder (Timeout).";
+          els.locationFeedback.textContent = "El GPS tard├│ mucho en responder (Timeout).";
         } else {
           els.locationFeedback.textContent = "Error al obtener GPS: " + err.message;
         }
@@ -478,7 +346,7 @@ function wireUI() {
   els.photoInput.addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    els.btnCapturePhoto.textContent = "⏳ Procesando foto...";
+    els.btnCapturePhoto.textContent = "ÔÅ│ Procesando foto...";
     try {
       const base64 = await compressImage(file);
       state.draft.photoData = base64;
@@ -489,7 +357,7 @@ function wireUI() {
       console.error(err);
       alert("Error al procesar foto");
     } finally {
-      els.btnCapturePhoto.textContent = "📷 TOMAR FOTO";
+      els.btnCapturePhoto.textContent = "­ƒôÀ TOMAR FOTO";
       els.photoInput.value = "";
     }
   });
@@ -527,7 +395,7 @@ function wireUI() {
     const name = els.volunteerAlias.value.trim();
     const phone = els.volunteerPhone.value.trim();
     if (!name) return alert("Por favor ingresa un nombre o alias");
-    if (!phone) return alert("Por favor ingresa un número de teléfono para poder contactarte en emergencias");
+    if (!phone) return alert("Por favor ingresa un n├║mero de tel├®fono para poder contactarte en emergencias");
     
     state.volunteer = {
       volunteerId: uid("vol"),
@@ -575,7 +443,7 @@ function wireUI() {
         state.draft.location = await captureGps();
       } else if (locType === "unknown") {
         state.draft.location = null;
-        els.locationFeedback.textContent = "Sin ubicación.";
+        els.locationFeedback.textContent = "Sin ubicaci├│n.";
       }
     });
   });
@@ -632,7 +500,7 @@ function wireUI() {
     await dbWrite(STORE_REPORTS, report);
     
     // Feedback & Reset
-    alert("✅ REPORTE GUARDADO\nSe enviará automáticamente cuando vuelva la conexión.");
+    alert("Ô£à REPORTE GUARDADO\nSe enviar├í autom├íticamente cuando vuelva la conexi├│n.");
     await loadReports();
     showView(els.viewHome);
     
@@ -649,38 +517,12 @@ function wireUI() {
 
 // === Init ===
 async function init() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const p2pImport = urlParams.get('import_p2p');
-  
   wireUI();
-  updateNetworkState();
-  
   const meta = await dbRead(STORE_META, "volunteer");
   if (meta && meta.value) {
     state.volunteer = meta.value;
     showView(els.viewHome);
     await loadReports();
-    
-    if (p2pImport) {
-      try {
-        const rep = JSON.parse(decodeURIComponent(escape(atob(p2pImport))));
-        rep.syncStatus = 'pending';
-        rep.source = 'p2p_offline';
-        const existing = state.reports.find(r => r.localId === rep.localId);
-        if (!existing) {
-          state.reports.push(rep);
-          await dbWrite(STORE_REPORTS, rep);
-          renderPending();
-          alert("¡Reporte importado con éxito desde el enlace!");
-        } else {
-          alert("Este reporte ya lo tenías guardado.");
-        }
-      } catch(e) {
-        alert("Enlace de importación inválido o corrupto.");
-      }
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-    
     syncPending();
   } else {
     showView(els.viewProfile);
