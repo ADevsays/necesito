@@ -267,7 +267,11 @@ function renderPending() {
 window.shareReportOffline = async function(localId) {
   const rep = state.reports.find(r => r.localId === localId);
   if (!rep) return;
-  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(rep))));
+  
+  const clone = { ...rep };
+  delete clone.photoData; // No podemos compartir 1MB de base64 en la URL
+  
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(clone))));
   const shareUrl = window.location.origin + '/?import_p2p=' + payload;
   
   if (navigator.share) {
@@ -289,9 +293,9 @@ window.showQR = function(localId) {
   const rep = state.reports.find(r => r.localId === localId);
   if (!rep) return;
   
-  // Remove photos to fit in QR
+  // Remove photoData to fit in QR (QR codes max out at ~3KB)
   const clone = { ...rep };
-  delete clone.photos;
+  delete clone.photoData;
   
   const payload = 'NECESITO_PAYLOAD:' + btoa(unescape(encodeURIComponent(JSON.stringify(clone))));
   
