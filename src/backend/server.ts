@@ -11,8 +11,8 @@ export async function createApp(client: Client) {
   const app = express();
   await bootstrapDatabase(client);
 
-  app.use(express.json({ limit: "1mb" }));
-  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ extended: false, limit: "50mb" }));
   app.use(express.static("public", { extensions: ["html"] }));
   app.use(createRoutes());
 

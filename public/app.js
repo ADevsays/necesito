@@ -448,10 +448,10 @@ function compressImage(file) {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        // Limit size heavily if offline
-        let MAX_WIDTH = navigator.onLine ? 1200 : 600;
-        let MAX_HEIGHT = navigator.onLine ? 1200 : 600;
-        let quality = navigator.onLine ? 0.7 : 0.5;
+        // Limit size aggressively to prevent Base64 bloat (JSON API limitation)
+        let MAX_WIDTH = 800;
+        let MAX_HEIGHT = 800;
+        let quality = 0.6;
 
         let width = img.width;
         let height = img.height;
