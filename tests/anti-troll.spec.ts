@@ -1,12 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { rmSync } from 'node:fs';
-import { join } from 'node:path';
 
 test.beforeEach(async ({ request }) => {
-  try {
-    rmSync(join(process.cwd(), 'data', 'necesito-test.db'), { force: true });
-  } catch (e) {}
-  
   // Seed a report via API
   const uniqueId = `test-report-troll-${Date.now()}`;
   await request.post('/api/reports/sync', {
@@ -72,5 +66,5 @@ test('Anti-Troll panel - Flagging 3 times hides report', async ({ page, request 
   
   // Reload page and verify it's hidden from the default list
   await page.reload();
-  await expect(page.locator('text=Spam report').first()).not.toBeVisible();
+  await expect(page.locator(`.pending-item[data-report-id="${reportId}"]`)).not.toBeVisible();
 });

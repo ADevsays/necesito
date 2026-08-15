@@ -14,7 +14,7 @@ type DataOptionsFindWhere<T extends object> =
 function normalizeValue(value: PossibleAttr): InValue {
   if (value instanceof Date) return value.toISOString();
   if (typeof value === "boolean") return value ? 1 : 0;
-  if (value === undefined || value === null) return "";
+  if (value === undefined || value === null) return null;
   return value as InValue;
 }
 

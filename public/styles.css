@@ -223,6 +223,45 @@ textarea:focus, input:focus {
 .view { display: none; }
 .view.active { display: block; }
 
+/* Type Tabs */
+.type-tab-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: var(--surface);
+  padding: 0.35rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+}
+
+.type-tab-btn {
+  padding: 0.75rem 0.5rem;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-align: center;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  background: transparent;
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.type-tab-btn.active {
+  background: white;
+  color: black;
+}
+
+.type-tab-btn.active.tab-emergency {
+  background: var(--critical);
+  color: white;
+}
+
+.type-tab-btn.active.tab-donation {
+  background: var(--necessary);
+  color: white;
+}
+
 /* Pending List */
 .pending-item {
   background: var(--surface);
@@ -251,6 +290,111 @@ textarea:focus, input:focus {
 .pending-item.syncing { border-color: var(--primary); }
 .pending-item.synced { border-color: var(--necessary); opacity: 0.7; }
 .pending-item.failed { border-color: var(--critical); }
+
+/* Distinct Donation Item Styling */
+.pending-item.donation-item {
+  border: 2px solid var(--border);
+  border-left: 6px solid var(--necessary);
+  background: var(--surface);
+}
+
+.pending-item.donation-item.status-resolved {
+  border-color: var(--necessary);
+  box-shadow: 4px 4px 0px rgba(34, 197, 94, 0.3);
+}
+
+.pending-item.donation-item.status-in_progress {
+  border-color: var(--urgent);
+  box-shadow: 4px 4px 0px rgba(249, 115, 22, 0.3);
+}
+
+.pending-item.donation-item.status-invalid {
+  border-color: #4b5563;
+  opacity: 0.6;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+}
+
+.donation-badge-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--necessary);
+  color: #000000;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.emergency-badge-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.emergency-badge-header.critical {
+  background: var(--critical);
+  color: white;
+}
+
+.emergency-badge-header.urgent {
+  background: var(--urgent);
+  color: white;
+}
+
+.emergency-badge-header.necessary {
+  background: var(--primary);
+  color: white;
+}
+
+.donation-detail-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px dashed #22c55e;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.donation-detail-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #86efac;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.donation-detail-content {
+  font-size: 1rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.supplies-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.supply-tag {
+  background: #14532d;
+  color: #86efac;
+  border: 1px solid #16a34a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
 
 /* Active Buttons Neon Effect */
 .pending-item.status-in_progress button[data-action="in_progress"] {

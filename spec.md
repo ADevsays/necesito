@@ -45,15 +45,13 @@ No implementar chat.
 
 No implementar IA.
 
-No implementar pagos.
-
-No implementar sistema de donaciones.
+No implementar pagos monetarios (sí donaciones de insumos físicos en terreno).
 
 No implementar red social.
 
-No implementar navegación GPS.
+No implementar navegación GPS turn-by-turn.
 
-No implementar funcionalidades que no sean necesarias para registrar y transmitir necesidades.
+No implementar funcionalidades que no sean necesarias para registrar y transmitir necesidades y donaciones.
 
 ---
 
@@ -212,15 +210,15 @@ Mostrar:
 
 ### ¿Qué encontraste?
 
-Botón principal:
+Botones principales:
 
-## + REGISTRAR NECESIDAD
+## + REGISTRAR NECESIDAD (EMERGENCIA)
+## 🙋‍♂️ QUIERO DONAR (INSUMOS)
 
 Debajo:
 
 ### 📋 REPORTES PENDIENTES
-
-### 🗺️ VER REPORTES
+### 🗺️ VER MAPA (Centro de Coordinación)
 
 Y arriba/abajo:
 
@@ -228,7 +226,7 @@ Y arriba/abajo:
 
 o
 
-`🟠 SIN INTERNET — LOS REPORTES SE GUARDAN EN ESTE TELÉFONO`
+`🟠 MODO OFFLINE — SIN CONEXIÓN`
 
 No mostrar login.
 
@@ -417,27 +415,44 @@ No utilizar IA.
 
 ---
 
-# 14. FOTO
+# 14. FOTO Y ALMACENAMIENTO DE MEDIOS
 
-Opcional:
+## En Reportes de Emergencia:
+* **Opcional**. Título dinámico: `FOTO (Opcional)`.
+* Botón: `📷 TOMAR FOTO`.
+* La foto es secundaria; el reporte de emergencia debe poder guardarse sin ella.
 
-## 📷 TOMAR FOTO
+## En Reportes de Donación:
+* **Obligatoria**. Título dinámico: `FOTO (Obligatoria)`.
+* Botón: `📷 TOMAR FOTO`.
+* El formulario no permite guardar la donación si no se adjunta al menos 1 fotografía de evidencia.
 
-Máximo 2 fotografías.
+## Reglas de Procesamiento y Almacenamiento:
+* Máximo 1–2 fotografías.
+* Comprimir en el cliente antes de almacenar en IndexedDB.
+* Al sincronizar con el servidor, las imágenes se guardan como archivos físicos en disco (`public/uploads/`) y la base de datos sólo almacena la ruta relativa.
+* **PROHIBIDO** almacenar blobs Base64 gigantes en columnas JSON de la base de datos para no saturar memoria o colapsar Turso/libSQL.
 
-Comprimirlas antes de guardarlas.
+---
 
-Objetivo:
+# 14.1. MODO DONACIONES (OFERTAS DE AYUDA)
 
-### <300 KB cada una cuando sea posible.
+Para canalizar la ayuda material de la ciudadanía y voluntarios:
 
-No permitir vídeo.
-
-No permitir archivos.
-
-La foto es secundaria.
-
-El reporte debe funcionar perfectamente sin ella.
+1. El usuario selecciona **🙋‍♂️ QUIERO DONAR**.
+2. La sección de necesidades cambia a: **¿QUÉ VAS A DONAR?**
+3. Categorías de Donación disponibles:
+   * 🧼 ASEO (`hygiene`)
+   * 🍲 COMIDA (`food`)
+   * 💧 AGUA (`water`)
+   * 👕 ROPA (`clothes`)
+   * 🧱 CONSTRUCCIÓN (`construction`)
+   * 💊 MEDICAMENTOS (`medication`)
+   * 📦 OTRO (`other`)
+4. Campo de texto obligatorio: **DETALLES DE LA DONACIÓN** (`description`) donde se detalla cantidad y estado (ej. "3 cajas de ropa térmica y 2 pacas de agua").
+5. Fotografía obligatoria.
+6. El reporte se crea con `source = "donation"` y prioridad base `necessary`.
+7. Al sincronizarse en el servidor, dispara automáticamente una notificación Push a los coordinadores de la zona registrada.
 
 ---
 
@@ -706,47 +721,36 @@ created_from_offline
 
 ---
 
-# 22. DASHBOARD
+# 22. DASHBOARD Y MAPA (/coordinar)
 
-Crear:
+Ruta:
 
 ```text
 /coordinar
 ```
 
-Esta interfaz requiere internet.
+Interfaz accesible para coordinadores y voluntarios en terreno.
 
-Login simple para el MVP.
+### Características del Dashboard:
+1. **Banner de Conexión Dinámico**: Muestra `🟠 MODO OFFLINE — SIN CONEXIÓN` únicamente cuando el navegador pierde conectividad en tiempo real (eventos `online`/`offline`).
+2. **Botón Central de Mapa**: `🗺️ VER MAPA` ubicado prominentemente en el centro junto a los filtros para alternar entre vista de lista y vista de mapa Leaflet.
+3. **Lazy Loading (Paginación Dinámica)**: Para evitar bloqueos del navegador con cientos de reportes, la lista renderiza en lotes de 20 casos mediante `IntersectionObserver` al hacer scroll hacia el final.
+4. **Distinción Visual de Donaciones**: Los reportes de donación muestran la insignia verde `🎁 DONACIÓN` y ocultan contadores innecesarios (heridos, atrapados).
+5. **Mapa Interactivo**:
+   * Marcadores de emergencia clasificados por color según prioridad (Rojo = Crítico, Naranja = Urgente, Azul/Verde = Necesario).
+   * Marcadores de donación con icono verde distintivo **🎁**.
+   * Ventanas emergentes (popups) 100% en español con botón interactivo **"VER CASO"**.
+   * Al pulsar "VER CASO", el mapa se cierra, la pantalla se desplaza suavemente hasta la tarjeta correspondiente en la lista y la resalta con una animación de brillo.
+6. **Sistema de Moderación Anti-Troll**:
+   * Botón `⚠ Reportar` en cada tarjeta.
+   * Si 3 voluntarios distintos marcan un reporte como malicioso o falso, pasa a estado `flagged` y se oculta automáticamente del panel.
+7. **Alertas Web Push**:
+   * Botón `🔔 ACTIVAR ALERTAS URGENTES` para suscribir el navegador a notificaciones de emergencias y donaciones por zona.
 
-No construir roles complejos.
-
-El dashboard debe mostrar inmediatamente:
-
-# NECESIDADES ACTIVAS
-
-Orden:
-
-1. CRÍTICO
-2. URGENTE
-3. NECESARIO
-
-Cada reporte:
-
-```text
-🔴 CRÍTICO
-
-RESCATE + MÉDICO
-
-4 personas
-1 herido
-1 atrapado
-
-📍 ubicación
-
-Registrado hace 8 min
-
-VOLUNTARIO: Carlos
-```
+Orden de la lista:
+1. Prioridad de estado (Nuevos → En proceso → Resueltos)
+2. Severidad (CRÍTICO → URGENTE → NECESARIO)
+3. Fecha de creación (más recientes primero)
 
 ---
 
@@ -1133,36 +1137,21 @@ Implementar:
 
 ---
 
-# 38. NO IMPLEMENTAR
+# 38. FUERA DEL ALCANCE INMEDIATO
 
-Queda explícitamente fuera del MVP:
+Queda explícitamente fuera de este alcance:
 
-* Bluetooth;
-* mesh;
+* Bluetooth / mesh P2P directo sin servidor;
 * WebRTC;
-* chat;
-* mensajería;
-* llamadas;
-* notificaciones push;
-* cuentas de víctimas;
-* perfiles públicos;
-* donaciones;
-* pagos;
-* IA;
-* reconocimiento de imágenes;
-* mapas 3D;
-* navegación turn-by-turn;
-* scraping;
-* redes sociales;
-* gamificación;
-* comentarios;
-* sistema avanzado de roles;
-* app Android;
-* app iOS.
-
-NO distraerse con estas funcionalidades.
-
----
+* Chat en tiempo real y llamadas;
+* Cuentas de usuario con contraseña para víctimas;
+* Pasarelas de pagos monetarios bancarios / PSE;
+* IA generativa o reconocimiento automático de fotos;
+* Mapas 3D pesados;
+* Navegación turn-by-turn estilo Waze;
+* Scraping de redes sociales;
+* Gamificación y comentarios libres;
+* Apps nativas en tiendas (App Store / Play Store).
 
 # 39. DEPLOYMENT
 

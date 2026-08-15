@@ -17,12 +17,46 @@
         });
       }
     </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+      #mapContainer {
+        display: none;
+        width: 100%;
+        height: calc(100vh - 150px);
+        border-radius: var(--radius);
+        margin-top: 1rem;
+        z-index: 1;
+      }
+    </style>
   </head>
   <body>
-    <main class="shell">
-      <h1 class="mb-6">NECESIDADES ACTIVAS</h1>
-      <button onclick="window.location.href='/'" class="btn-large secondary mb-6" style="width:100%; border:none; padding:1rem;">⬅ VOLVER AL INICIO</button>
+    
+    <nav style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding: 1rem; background: var(--surface);">
+      <h1 style="font-size:1.2rem; margin:0; line-height:1;">Centro de Coordinación</h1>
+      <div>
+        <button onclick="window.location.href='/'" class="btn-large" style="padding:0.5rem 1rem; font-size:0.9rem; background:var(--bg); border:1px solid var(--border);">Volver</button>
+      </div>
+    </nav>
+    
+    <main class="shell" style="padding-top:0;">
+      
+      <div id="statusBanner" class="status-banner offline">
+        🟠 MODO OFFLINE — SIN CONEXIÓN
+      </div>
+      
+      <div id="mapContainer"></div>
+
+      <div id="listContainer">
       <button id="btnPushAlerts" onclick="subscribeToPushNotifications()" class="btn-large mb-6" style="width:100%; border:2px solid var(--primary); color:var(--primary); padding:1rem; text-align:center; display:none;">🔔 ACTIVAR ALERTAS URGENTES</button>
+
+      <button id="btnToggleMap" class="btn-large mb-6" style="width:100%; background:var(--surface); border:2px solid var(--border); padding:1rem; text-align:center;">🗺️ VER MAPA</button>
+
+      <div class="type-tab-group" id="typeTabGroup">
+        <button class="type-tab-btn active" data-type-filter="all">TODOS</button>
+        <button class="type-tab-btn tab-emergency" data-type-filter="emergency">🚨 EMERGENCIAS</button>
+        <button class="type-tab-btn tab-donation" data-type-filter="donation">🎁 DONACIONES</button>
+      </div>
 
       <div class="mb-6" style="display: flex; flex-direction: column; gap: 1rem;">
         <div>
@@ -45,13 +79,15 @@
             <option value="resolved">Resuelto</option>
             <option value="invalid">Descartado</option>
           </select>
+        </div>
       </div>
 
       <div class="mb-4">
-        <h3 id="reportsCountText">0 Casos</h3>
+        <h3 id="reportsCountText" style="min-height: 1.5rem;"></h3>
       </div>
       <div id="coordList"></div>
-      
+      <div id="scrollObserver" style="height: 20px; width: 100%; margin-top: 1rem;"></div>
+      </div> <!-- End listContainer -->
     </main>
     
     <div id="photoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; align-items:center; justify-content:center; flex-direction:column; padding:1rem; cursor:pointer;" onclick="this.style.display='none'">

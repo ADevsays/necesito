@@ -75,3 +75,39 @@ export async function notifyUrgentReport(report: {
     }
   }
 }
+
+export async function notifyNewDonation(report: {
+  municipality: string | null;
+  description: string | null;
+}) {
+  const allSubs = await PushSubscriptionModel.findAll<PushSubscriptionRecord>();
+
+  const payload = JSON.stringify({
+    title: `🎁 Nueva Donación en ${report.municipality || "Ubicación desconocida"}`,
+    body: report.description ? report.description.slice(0, 100) : "Alguien en la zona quiere hacer una donación.",
+    url: "/coordinar.html"
+  });
+
+  const reportCity = (report.municipality || "").toLowerCase();
+
+  for (const sub of allSubs) {
+    const userCities = sub.cities.split(",").map(c => c.trim().toLowerCase());
+    const wantsAll = userCities.includes("todas") || userCities.includes("todo") || userCities.includes("all");
+    
+    if (wantsAll || userCities.includes(reportCity)) {
+      try {
+        await webpush.sendNotification({
+          endpoint: sub.endpoint,
+          keys: JSON.parse(sub.keys_json)
+        }, payload);
+      } catch (err: any) {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          console.log("Subscription expired or removed", sub.endpoint);
+          await PushSubscriptionModel.execute(`DELETE FROM push_subscriptions WHERE id = ?`, [sub.id]);
+        } else {
+          console.error("Error sending push notification", err);
+        }
+      }
+    }
+  }
+}

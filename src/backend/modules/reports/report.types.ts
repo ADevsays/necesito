@@ -46,40 +46,66 @@ export interface ReportSyncInput {
   source?: string;
 }
 
+export interface LocationRecord {
+  id: number;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy: number | null;
+  label: string | null;
+  address: string | null;
+  region: string | null;
+  municipality: string | null;
+  neighborhood: string | null;
+  created_at: string;
+}
+
+export interface NeedsCatalogRecord {
+  id: number;
+  code: string;
+  label: string;
+  icon: string;
+  category: string;
+}
+
+export interface ReportNeedsRecord {
+  id: number;
+  report_id: number;
+  need_code: string;
+}
+
+export interface ReportPhotoRecord {
+  id: number;
+  report_id: number;
+  data_url: string;
+  name: string | null;
+  mime_type: string | null;
+  size: number | null;
+  created_at: string;
+}
+
 export interface ReportRecord {
   id: number;
   local_id: string;
   server_id: string | null;
   volunteer_id: string;
-  volunteer_name: string;
-  phone: string | null;
-  created_at: string;
-  updated_at: string;
+  location_id: number | null;
+  priority: Priority;
+  people_count: number;
+  injured: number | null;
+  trapped: number | null;
+  children: number | null;
+  elderly: number | null;
+  description: string | null;
+  emergency: number;
+  assigned_to: string | null;
+  source: string;
+  status: ReportStatus;
+  status_changed_at: string;
   sync_status: SyncStatus;
   sync_attempts: number;
   last_sync_attempt: string | null;
-  status: ReportStatus;
-  status_changed_at: string;
-  region: string | null;
-  municipality: string | null;
-  neighborhood: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  accuracy: number | null;
-  location_label: string | null;
-  location_address: string | null;
-  needs_json: string;
-  priority: Priority;
-  people_count: number;
-  injured: number;
-  trapped: number;
-  children: number;
-  elderly: number;
-  description: string | null;
-  emergency: number;
-  photos_json: string;
-  assigned_to: string | null;
-  source: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ReportHistoryRecord {

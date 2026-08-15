@@ -42,6 +42,10 @@
         <button id="btnFastReport" class="btn-massive secondary">
           ⚡ REPORTE RÁPIDO
         </button>
+
+        <button id="btnDonation" class="btn-massive secondary mt-4">
+          🙋‍♂️ QUIERO DONAR
+        </button>
         
         <div class="mt-6">
           <button id="btnViewPending" class="btn-massive secondary" style="font-size:1.1rem; padding: 1rem;">
@@ -61,10 +65,10 @@
 
       <!-- VIEW: CAPTURE -->
       <section id="view-capture" class="view">
-        <h1 class="mb-6">NUEVO REPORTE</h1>
+        <h1 class="mb-6" id="captureTitle">NUEVO REPORTE</h1>
         
         <!-- LOCATION -->
-        <h2>¿DÓNDE ESTÁ LA PERSONA?</h2>
+        <h2 id="locTitle">¿DÓNDE ESTÁ LA PERSONA?</h2>
         <div class="mb-4" style="display: flex; flex-direction: column; gap: 0.5rem;">
           <button class="btn-large" data-loc="gps">📍 USAR MI UBICACIÓN</button>
           <button class="btn-large" data-loc="text">✏️ ESCRIBIR UBICACIÓN</button>
@@ -74,7 +78,7 @@
         <p id="locationFeedback" class="micro mb-6" style="color:var(--primary);"></p>
 
         <!-- PHOTO -->
-        <h2 class="mt-6">FOTO (Opcional)</h2>
+        <h2 class="mt-6" id="photoTitle">FOTO (Opcional)</h2>
         <div class="mb-4">
           <input type="file" id="photoInput" accept="image/*" style="display:none" />
           <button id="btnCapturePhoto" class="btn-large secondary mb-2" style="width:100%;">📷 CÁMARA / GALERÍA</button>
@@ -85,7 +89,7 @@
         </div>
 
         <!-- NEEDS -->
-        <h2>NECESIDAD</h2>
+        <h2 id="needsTitle">NECESIDAD</h2>
         <div class="grid-2 mb-6" id="needsGrid">
           <button class="btn-large" data-need="rescue"><span style="font-size: 1.5rem">🔴</span> RESCATE</button>
           <button class="btn-large" data-need="medical"><span style="font-size: 1.5rem">🏥</span> MÉDICO</button>
@@ -99,12 +103,29 @@
           <button class="btn-large" data-need="other"><span style="font-size: 1.5rem">📦</span> OTRO</button>
         </div>
 
+        <div class="grid-2 mb-6" id="donationNeedsGrid" style="display:none;">
+          <button class="btn-large" data-need="hygiene"><span style="font-size: 1.5rem">🧼</span> ASEO</button>
+          <button class="btn-large" data-need="food"><span style="font-size: 1.5rem">🍲</span> COMIDA</button>
+          <button class="btn-large" data-need="water"><span style="font-size: 1.5rem">💧</span> AGUA</button>
+          <button class="btn-large" data-need="clothes"><span style="font-size: 1.5rem">👕</span> ROPA</button>
+          <button class="btn-large" data-need="construction"><span style="font-size: 1.5rem">🧱</span> CONSTRUCCIÓN</button>
+          <button class="btn-large" data-need="medication"><span style="font-size: 1.5rem">💊</span> MEDICAMENTOS</button>
+          <button class="btn-large" data-need="other"><span style="font-size: 1.5rem">📦</span> OTRO</button>
+        </div>
+        
+        <div id="donationDetailsSection" style="display:none; margin-bottom: 1.5rem;">
+          <h2 style="margin-bottom: 0.5rem;">DETALLES DE LA DONACIÓN</h2>
+          <textarea id="donationDetailsInput" class="btn-large" style="width:100%; text-align:left; min-height: 80px; padding: 1rem; border: 2px solid var(--border); background: var(--surface); color: white;" placeholder="Ej: 3 cajas de ropa, 2 pacas de agua..."></textarea>
+        </div>
+
         <!-- PRIORITY -->
-        <h2>¿QUÉ TAN URGENTE ES?</h2>
-        <div class="mb-6">
-          <button class="btn-large mb-2" data-priority="critical" style="width:100%;">🔴 CRÍTICO<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Riesgo inmediato para la vida</span></button>
-          <button class="btn-large mb-2" data-priority="urgent" style="width:100%;">🟠 URGENTE<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Necesita ayuda pronto</span></button>
-          <button class="btn-large mb-2" data-priority="necessary" style="width:100%;">🟢 NECESARIO<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Importante pero no peligroso</span></button>
+        <div id="prioritySection">
+          <h2>¿QUÉ TAN URGENTE ES?</h2>
+          <div class="mb-6">
+            <button class="btn-large mb-2" data-priority="critical" style="width:100%;">🔴 CRÍTICO<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Riesgo inmediato para la vida</span></button>
+            <button class="btn-large mb-2" data-priority="urgent" style="width:100%;">🟠 URGENTE<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Necesita ayuda pronto</span></button>
+            <button class="btn-large mb-2" data-priority="necessary" style="width:100%;">🟢 NECESARIO<span style="display:block; font-size:0.75rem; opacity:0.9; margin-top:0.25rem; font-weight:normal; color:inherit;">Importante pero no peligroso</span></button>
+          </div>
         </div>
 
         <!-- PEOPLE -->

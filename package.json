@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",
+    "dotenv": "^17.4.2",
     "express": "^4.21.2",
     "web-push": "^3.6.7"
   },

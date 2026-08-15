@@ -3,7 +3,15 @@ dist
 .env
 .env.*
 .DS_Store
+*.db
+*.db-journal
+data/*.db
+data/*.db-journal
+playwright-report
+test-results
 public/app.js.map
 public/coordinar.js.map
 public/push.js.map
 public/sw.js.map
+public/uploads/*
+!public/uploads/.gitkeep

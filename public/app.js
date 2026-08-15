@@ -22,6 +22,7 @@ const els = {
   
   btnNewReport: document.getElementById("btnNewReport"),
   btnFastReport: document.getElementById("btnFastReport"),
+  btnDonation: document.getElementById("btnDonation"),
   btnSaveReport: document.getElementById("btnSaveReport"),
   btnCancel: document.getElementById("btnCancel"),
   btnViewPending: document.getElementById("btnViewPending"),
@@ -39,7 +40,12 @@ const els = {
   btnCapturePhoto: document.getElementById("btnCapturePhoto"),
   photoPreviewContainer: document.getElementById("photoPreviewContainer"),
   photoPreview: document.getElementById("photoPreview"),
-  btnRemovePhoto: document.getElementById("btnRemovePhoto")
+  btnRemovePhoto: document.getElementById("btnRemovePhoto"),
+  
+  needsGrid: document.getElementById("needsGrid"),
+  donationNeedsGrid: document.getElementById("donationNeedsGrid"),
+  donationDetailsSection: document.getElementById("donationDetailsSection"),
+  donationDetailsInput: document.getElementById("donationDetailsInput")
 };
 
 function uid(prefix = "local") {
@@ -57,7 +63,8 @@ function resetDraft() {
     children: null,
     elderly: null,
     description: "",
-    photoData: null
+    photoData: null,
+    source: "offline"
   };
 }
 
@@ -183,6 +190,7 @@ async function syncPending() {
       children: r.children,
       elderly: r.elderly,
       description: r.description,
+      source: r.source || "offline",
       photos: r.photoData ? [{ dataUrl: r.photoData, type: "image/jpeg", name: "foto.jpg", size: r.photoData.length }] : []
     }));
 
@@ -234,32 +242,56 @@ function renderPending() {
     return;
   }
   for (const rep of pending) {
+    const isDonation = rep.source === "donation";
     const div = document.createElement("div");
-    div.className = `pending-item ${rep.syncStatus}`;
+    div.className = `pending-item ${isDonation ? "donation-item" : ""} ${rep.syncStatus}`;
     
     const NEED_LABELS = {
       "rescue": "RESCATE", "medical": "MÉDICO", "water": "AGUA", "food": "COMIDA",
       "shelter": "REFUGIO", "medication": "MEDICAMENTOS", "vulnerable": "VULNERABLE",
-      "missing": "DESAPARECIDO", "pets": "MASCOTA", "other": "OTRO"
+      "missing": "DESAPARECIDO", "pets": "MASCOTA", "other": "OTRO",
+      "hygiene": "ASEO", "clothes": "ROPA", "construction": "CONSTRUCCIÓN"
     };
-    const PRIORITY_LABELS = { "critical": "CRÍTICO", "urgent": "URGENTE", "necessary": "NECESARIO" };
+    const PRIORITY_LABELS = { "critical": "🔴 CRÍTICO", "urgent": "🟠 URGENTE", "necessary": "🟢 NECESARIO" };
     
-    const translatedNeeds = rep.needs.map(n => NEED_LABELS[n] || n).join(" + ").toUpperCase();
-    const needs = translatedNeeds || "SIN NECESIDAD";
-    const priorityStr = PRIORITY_LABELS[rep.priority] || rep.priority || 'NORMAL';
+    const needsArr = Array.isArray(rep.needs) ? rep.needs : [];
+    const translatedNeeds = needsArr.map(n => NEED_LABELS[n] || n).join(" + ").toUpperCase();
+    const needs = translatedNeeds || (isDonation ? "INSUMOS VARIOS" : "SIN NECESIDAD");
+    const priorityStr = PRIORITY_LABELS[rep.priority] || rep.priority || 'NECESARIO';
     
     const loc = rep.location?.description ? rep.location.description : (rep.location?.latitude ? "GPS" : "Sin ubicación");
-    div.innerHTML = `
-      <div class="pending-title">${needs}</div>
-      <div class="pending-meta">${rep.peopleCount} personas · ${priorityStr}</div>
-      <div class="pending-meta">📍 ${loc} · Hace un momento</div>
-      <div class="pending-meta mt-4" style="color:var(--urgent)">🟠 PENDIENTE DE SINCRONIZACIÓN</div>
-      
-      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-        <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="shareReportOffline('${rep.localId}')">📤 COMPARTIR</button>
-        <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="showQR('${rep.localId}')">📱 MOSTRAR QR</button>
-      </div>
-    `;
+    
+    if (isDonation) {
+      div.innerHTML = `
+        <div class="donation-badge-header">🎁 DONACIÓN PENDIENTE</div>
+        <div class="pending-title" style="color:#86efac;">${needs}</div>
+        <div class="donation-detail-box" style="margin-top:0.5rem;">
+          <div class="donation-detail-title">DETALLES REGISTRADOS</div>
+          <div class="donation-detail-content">${rep.description || 'Sin detalles adicionales'}</div>
+        </div>
+        <div class="pending-meta">📍 ${loc} · Hace un momento</div>
+        <div class="pending-meta mt-4" style="color:var(--urgent)">🟠 PENDIENTE DE SINCRONIZACIÓN</div>
+        
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+          <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="shareReportOffline('${rep.localId}')">📤 COMPARTIR</button>
+          <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="showQR('${rep.localId}')">📱 MOSTRAR QR</button>
+        </div>
+      `;
+    } else {
+      div.innerHTML = `
+        <div class="emergency-badge-header ${rep.priority || 'necessary'}">${priorityStr}</div>
+        <div class="pending-title">${needs}</div>
+        <div class="pending-meta">${rep.peopleCount} personas</div>
+        <div class="pending-meta">📍 ${loc} · Hace un momento</div>
+        <div class="pending-meta mt-4" style="color:var(--urgent)">🟠 PENDIENTE DE SINCRONIZACIÓN</div>
+        
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+          <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="shareReportOffline('${rep.localId}')">📤 COMPARTIR</button>
+          <button class="btn-large secondary" style="flex:1; font-size:0.8rem; padding:0.5rem;" onclick="showQR('${rep.localId}')">📱 MOSTRAR QR</button>
+        </div>
+      `;
+    }
+    
     els.pendingList.appendChild(div);
   }
 }
@@ -380,7 +412,9 @@ document.getElementById('btnScanQR')?.addEventListener('click', () => {
 });
 
 
-function openCapture(fastMode = false) {
+function openCapture(mode = 'normal') {
+  const fastMode = mode === 'fast';
+  const donationMode = mode === 'donation';
   state.draft = resetDraft();
   
   // Reset UI
@@ -394,6 +428,7 @@ function openCapture(fastMode = false) {
   els.locationInput.value = "";
   els.descriptionInput.value = "";
   els.locationFeedback.textContent = "";
+  if (els.donationDetailsInput) els.donationDetailsInput.value = "";
   
   els.photoPreviewContainer.style.display = "none";
   els.photoPreview.src = "";
@@ -401,7 +436,33 @@ function openCapture(fastMode = false) {
   els.btnCapturePhoto.style.display = "block";
   els.btnCapturePhoto.textContent = "📷 TOMAR FOTO";
   
-  els.fullFormSection.style.display = fastMode ? "none" : "block";
+  if (donationMode) {
+    document.getElementById("captureTitle").textContent = "NUEVA DONACIÓN";
+    document.getElementById("locTitle").textContent = "¿DÓNDE ESTÁ LA DONACIÓN?";
+    document.getElementById("needsTitle").textContent = "¿QUÉ VAS A DONAR?";
+    document.getElementById("photoTitle").textContent = "FOTO (Obligatoria)";
+    document.getElementById("prioritySection").style.display = "none";
+    els.fullFormSection.style.display = "none";
+    if (els.donationNeedsGrid) els.donationNeedsGrid.style.display = "grid";
+    if (els.needsGrid) els.needsGrid.style.display = "none";
+    if (els.donationDetailsSection) els.donationDetailsSection.style.display = "block";
+    els.btnCapturePhoto.textContent = "📷 TOMAR FOTO";
+    state.draft.source = "donation";
+    state.draft.priority = "necessary"; // Default for donations
+  } else {
+    document.getElementById("captureTitle").textContent = "NUEVO REPORTE";
+    document.getElementById("locTitle").textContent = "¿DÓNDE ESTÁ LA PERSONA?";
+    document.getElementById("needsTitle").textContent = "NECESIDAD";
+    document.getElementById("photoTitle").textContent = "FOTO (Opcional)";
+    document.getElementById("prioritySection").style.display = "block";
+    els.fullFormSection.style.display = fastMode ? "none" : "block";
+    if (els.donationNeedsGrid) els.donationNeedsGrid.style.display = "none";
+    if (els.needsGrid) els.needsGrid.style.display = "grid";
+    if (els.donationDetailsSection) els.donationDetailsSection.style.display = "none";
+    els.btnCapturePhoto.textContent = "📷 TOMAR FOTO";
+    state.draft.source = "offline";
+  }
+
   showView(els.viewCapture);
 }
 
@@ -482,8 +543,9 @@ function compressImage(file) {
 
 // === Event Listeners ===
 function wireUI() {
-  els.btnNewReport.addEventListener("click", () => openCapture(false));
-  els.btnFastReport.addEventListener("click", () => openCapture(true));
+  els.btnNewReport.addEventListener("click", () => openCapture('normal'));
+  els.btnFastReport.addEventListener("click", () => openCapture('fast'));
+  els.btnDonation.addEventListener("click", () => openCapture('donation'));
   els.btnCancel.addEventListener("click", () => showView(els.viewHome));
   
   els.btnViewPending.addEventListener("click", () => showView(els.viewPending));
@@ -596,6 +658,37 @@ function wireUI() {
     });
   });
 
+  // Geocode manual text address
+  els.locationInput.addEventListener("blur", async () => {
+    const text = els.locationInput.value.trim();
+    if (!text) return;
+    els.locationFeedback.textContent = "🔍 Buscando coordenadas para el mapa...";
+    els.locationFeedback.style.color = "#93c5fd";
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=co&limit=1&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        state.draft.location = {
+          latitude: parseFloat(data[0].lat),
+          longitude: parseFloat(data[0].lon),
+          accuracy: null,
+          description: text,
+          label: data[0].display_name
+        };
+        els.locationFeedback.textContent = `📍 Ubicación detectada en mapa (${parseFloat(data[0].lat).toFixed(4)}, ${parseFloat(data[0].lon).toFixed(4)})`;
+        els.locationFeedback.style.color = "#86efac";
+      } else {
+        state.draft.location = { description: text };
+        els.locationFeedback.textContent = "📍 Dirección guardada como texto de referencia.";
+        els.locationFeedback.style.color = "#fdba74";
+      }
+    } catch(e) {
+      state.draft.location = { description: text };
+      els.locationFeedback.textContent = "📍 Dirección guardada (modo sin conexión).";
+      els.locationFeedback.style.color = "#fdba74";
+    }
+  });
+
   // People Count
   document.querySelectorAll('.count-btn').forEach(btn => {
     btn.addEventListener("click", () => {
@@ -622,9 +715,28 @@ function wireUI() {
   els.btnSaveReport.addEventListener("click", async () => {
     // Collect text inputs
     if (els.locationInput.style.display === "block" && els.locationInput.value.trim()) {
-      state.draft.location = { description: els.locationInput.value.trim() };
+      const text = els.locationInput.value.trim();
+      if (state.draft.location && state.draft.location.latitude) {
+        state.draft.location.description = text;
+      } else {
+        state.draft.location = { description: text };
+      }
     }
-    state.draft.description = els.descriptionInput.value.trim();
+    
+    if (state.draft.source === 'donation') {
+      const donationDesc = els.donationDetailsInput ? els.donationDetailsInput.value.trim() : "";
+      if (!donationDesc) {
+        alert("Por favor detalla qué vas a donar (Cantidades, detalles, etc).");
+        return;
+      }
+      if (!state.draft.photoData) {
+        alert("Por favor incluye una foto de la donación. Es obligatorio.");
+        return;
+      }
+      state.draft.description = donationDesc;
+    } else {
+      state.draft.description = els.descriptionInput.value.trim();
+    }
     
     // Construct LocalReport
     const report = {
@@ -640,7 +752,9 @@ function wireUI() {
       children: state.draft.children,
       elderly: state.draft.elderly,
       description: state.draft.description,
+      emergency: state.draft.priority === "critical" || state.draft.priority === "urgent",
       photoData: state.draft.photoData,
+      source: state.draft.source || "offline",
       syncStatus: "pending",
       syncAttempts: 0
     };
